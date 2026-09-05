@@ -4,12 +4,12 @@
 
 ## 数据源与集成
 
-- [ ] 用 PostgreSQL 实现 `OfferCatalog`，补充人工套餐、不可变版本、有效期、门店、时段和上下架状态的数据表及迁移。
-- [ ] 实现运营侧套餐创建、CSV 导入、审核、发布、核验和下架 API。
-- [ ] 用麦当劳只读 MCP Client 实现 `OfficialCatalog`，加载门店、菜单、套餐、选择组和用户可用优惠券。
-- [ ] 用麦当劳 `calculate-price` 能力实现 `OfficialPricing`，处理包装费、配送费、选项加价、优惠券和错误映射。
-- [ ] 替换 `internal/adapters/outbound/placeholder` 中的空数据 Adapter，并增加外部接口契约测试。
-- [ ] 为官方菜单和人工套餐增加缓存、新鲜度及降级策略。
+- [x] 用 PostgreSQL 实现 `OfferCatalog`，补充人工套餐、不可变版本、有效期、门店、时段和上下架状态的数据表及迁移。
+- [x] 实现运营侧套餐创建、CSV 导入、审核、发布、核验和下架 API。
+- [x] 用麦当劳只读 MCP Client 实现 `OfficialCatalog`，加载门店、菜单、套餐、选择组和用户可用优惠券。
+- [x] 用麦当劳 `calculate-price` 能力实现 `OfficialPricing`，处理包装费、配送费、选项加价、优惠券和错误映射。
+- [x] 替换 `internal/adapters/outbound/placeholder` 中的空数据 Adapter，并增加外部接口契约测试。
+- [x] 为官方菜单和人工套餐增加缓存、新鲜度及降级策略。
 
 ## 需求理解与商品标准化
 

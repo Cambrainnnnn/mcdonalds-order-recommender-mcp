@@ -81,9 +81,27 @@ type OfficialSupply struct {
 
 type OfficialProduct struct {
 	Code               string
+	Name               string
 	CanonicalProductID string
 	Available          bool
+	Price              *domain.Money
+	ChoiceGroups       []OfficialChoiceGroup
 	Warnings           []string
+}
+
+type OfficialChoiceGroup struct {
+	ID          string
+	Name        string
+	MinQuantity int
+	MaxQuantity int
+	Choices     []OfficialChoice
+}
+
+type OfficialChoice struct {
+	Code     string
+	Name     string
+	Quantity int
+	Price    int64
 }
 
 type OfficialCoupon struct {
@@ -93,10 +111,11 @@ type OfficialCoupon struct {
 }
 
 type OfficialPriceRequest struct {
-	StoreCode string
-	BECode    string
-	OrderMode domain.OrderMode
-	Items     []OfficialPriceItem
+	StoreCode       string
+	BECode          string
+	OrderMode       domain.OrderMode
+	ReservationDate string
+	Items           []OfficialPriceItem
 }
 
 type OfficialPriceItem struct {

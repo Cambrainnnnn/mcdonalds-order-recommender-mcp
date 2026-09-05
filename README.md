@@ -1,6 +1,6 @@
 # Meal Recommendation Service
 
-跨渠道智能点餐推荐服务的 Go MVP。当前版本已实现结构化需求、有界候选生成、硬约束过滤和三类推荐结果，真实套餐与官方算价数据源仍使用可替换 Port 和空数据占位 Adapter。
+跨渠道智能点餐推荐服务的 Go MVP。当前版本已实现结构化需求、候选生成与排序、PostgreSQL 人工套餐库、运营 API，以及麦当劳 MCP 菜单和官方算价接入。
 
 ## 架构
 
@@ -16,7 +16,7 @@ cmd/api
 - `internal/domain`：纯领域类型和确定性业务规则，不依赖 HTTP、数据库、MCP 或 LLM SDK。
 - `internal/application`：用例编排及由应用层拥有的 Port 接口。
 - `internal/adapters/inbound`：HTTP 等入站协议适配。
-- `internal/adapters/outbound`：数据库、LLM、麦当劳 MCP 等出站实现；当前提供内存 Session Repository。
+- `internal/adapters/outbound`：提供内存仓储、PostgreSQL 套餐仓储和麦当劳 Streamable HTTP MCP Client。
 - `internal/infrastructure`：配置、ID 等技术设施。
 - `cmd/api`：唯一的依赖装配入口。
 
@@ -121,7 +121,7 @@ HTTP 入站适配层，将 HTTP 请求转换为应用用例参数，并将应用
 ### 根目录文件
 
 - `docs/mvp-architecture-design.md`：完整的 MVP 架构、数据模型和推荐算法设计文档。
-- `go.mod`：Go 模块定义，当前只使用标准库，没有第三方运行时依赖。
+- `go.mod`：Go 模块定义，使用 pgx `database/sql` 驱动连接 PostgreSQL。
 - `Makefile`：提供 `run`、`test`、`vet`、`fmt` 和 `check` 命令。
 - `.gitignore`：忽略本地环境文件、构建产物、覆盖率结果和日志。
 
@@ -138,17 +138,18 @@ HTTP 入站适配层，将 HTTP 请求转换为应用用例参数，并将应用
 - 偏好、浪费、便利性、价格新鲜度和资格风险评分，以及 Pareto 去重。
 - “最低实付”“最符合口味”“性价比最高”三类不重复结果。
 - 内存会话仓储。
+- PostgreSQL 人工套餐仓储、自动 migration 和不可变发布版本。
+- 套餐创建、CSV 导入、复核、发布、再核验和下架 API。
+- 麦当劳 Streamable HTTP MCP 菜单、套餐详情、门店优惠券和实时算价 Adapter。
+- 菜单、报价和人工套餐缓存，以及陈旧缓存降级。
 - LLM、人工套餐、官方菜单、官方算价和候选引擎的可替换接口。
 - 领域、应用和 HTTP 层测试。
 
 尚未实现：
 
-- PostgreSQL Adapter 和数据库迁移。
 - 自然语言用户消息处理与需求 Patch。
 - LLM Requirement Extractor。
-- 人工套餐管理和导入。
-- 麦当劳 MCP Client Adapter。
-- 真实官方算价 Adapter 和推荐快照持久化。
+- 推荐快照持久化。
 
 详细的外部依赖和后续增强项见 `todo.md`。
 
@@ -166,6 +167,14 @@ make run
 - `APP_HTTP_ADDRESS`，默认 `:8080`
 - `APP_SESSION_TTL`，默认 `30m`
 - `APP_SHUTDOWN_TIMEOUT`，默认 `10s`
+- `APP_DATABASE_URL`，PostgreSQL DSN；未设置时使用内存套餐库
+- `APP_MCD_MCP_ENDPOINT`，默认 `https://mcp.mcd.cn`
+- `APP_MCD_MCP_TOKEN`，麦当劳 MCP Bearer Token；未设置时降级为仅人工套餐
+- `APP_EXTERNAL_TIMEOUT`，默认 `12s`
+- `APP_CACHE_TTL`，默认 `2m`
+- `APP_CACHE_STALE_TTL`，默认 `30m`
+- `APP_OFFER_STALE_AFTER`，默认 `24h`
+- `APP_MCD_MAX_DETAILS`，单次菜单最多加载的套餐详情数，默认 `20`
 
 ## 当前 API
 
@@ -211,7 +220,27 @@ curl -X PUT http://localhost:8080/v1/recommendation-sessions/{sessionId}/require
 curl -X POST http://localhost:8080/v1/recommendation-sessions/{sessionId}/recommendations
 ```
 
-默认程序装配的是空数据占位 Adapter，因此在接入真实套餐源前会返回 `no_candidates`。算法闭环通过可控的 Port Stub 在测试中验证。
+配置 `APP_DATABASE_URL` 后，程序启动时自动创建套餐表和不可变版本约束。未配置数据库时，运营 API 和推荐链路使用进程内套餐库；进程重启后数据会丢失。
+
+### 运营套餐 API
+
+```text
+POST /v1/admin/offers
+PUT  /v1/admin/offers/{offerId}/draft
+POST /v1/admin/offers/imports
+POST /v1/admin/offers/{offerId}/review
+POST /v1/admin/offers/{offerId}/publish
+POST /v1/admin/offers/{offerId}/verify
+POST /v1/admin/offers/{offerId}/disable
+```
+
+CSV 导入使用 `Content-Type: text/csv`，列为：
+
+```text
+source,title,price_amount,currency,purchase_url,city,store_codes,order_modes,valid_from,valid_until,valid_time_rules_json,components_json
+```
+
+`store_codes` 和 `order_modes` 使用 `|` 分隔；有效期使用 RFC3339。`valid_time_rules_json` 是可选 JSON 数组，星期使用 `0`（周日）到 `6`（周六），起止时刻使用 `HH:MM`，例如 `[{"weekdays":[1,2,3,4,5],"start":"10:30","end":"14:00"}]`；`components_json` 是 JSON 数组。
 
 ## 已预留的可替换边界
 

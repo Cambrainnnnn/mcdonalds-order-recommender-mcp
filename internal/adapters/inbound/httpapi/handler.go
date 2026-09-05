@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"strings"
 
+	appoffers "meal-recommendation/internal/application/offers"
 	app "meal-recommendation/internal/application/recommendation"
 	domain "meal-recommendation/internal/domain/recommendation"
 )
@@ -26,17 +27,38 @@ type SessionUseCase interface {
 
 type Handler struct {
 	sessions SessionUseCase
+	offers   OfferAdminUseCase
 	logger   *slog.Logger
 }
 
-func NewHandler(sessions SessionUseCase, logger *slog.Logger) *Handler {
+type OfferAdminUseCase interface {
+	Create(context.Context, appoffers.CreateCommand) (*appoffers.Offer, error)
+	UpdateDraft(context.Context, string, appoffers.UpdateCommand) (*appoffers.Offer, error)
+	Import(context.Context, []appoffers.CreateCommand) appoffers.ImportResult
+	Review(context.Context, string) (*appoffers.Offer, error)
+	Publish(context.Context, string) (*appoffers.Offer, error)
+	Verify(context.Context, string) (*appoffers.Offer, error)
+	Disable(context.Context, string) (*appoffers.Offer, error)
+}
+
+type HandlerOption func(*Handler)
+
+func WithOfferAdmin(offers OfferAdminUseCase) HandlerOption {
+	return func(handler *Handler) { handler.offers = offers }
+}
+
+func NewHandler(sessions SessionUseCase, logger *slog.Logger, options ...HandlerOption) *Handler {
 	if sessions == nil {
 		panic("httpapi: session use case is required")
 	}
 	if logger == nil {
 		logger = slog.Default()
 	}
-	return &Handler{sessions: sessions, logger: logger}
+	handler := &Handler{sessions: sessions, logger: logger}
+	for _, option := range options {
+		option(handler)
+	}
+	return handler
 }
 
 func (h *Handler) Routes() http.Handler {
@@ -47,6 +69,9 @@ func (h *Handler) Routes() http.Handler {
 	mux.HandleFunc("GET /v1/recommendation-sessions/{sessionId}", h.getSession)
 	mux.HandleFunc("PUT /v1/recommendation-sessions/{sessionId}/requirement", h.updateRequirement)
 	mux.HandleFunc("POST /v1/recommendation-sessions/{sessionId}/recommendations", h.generateRecommendations)
+	if h.offers != nil {
+		h.registerOfferAdminRoutes(mux)
+	}
 	mux.HandleFunc("/healthz", h.methodNotAllowed("GET, HEAD"))
 	mux.HandleFunc("/readyz", h.methodNotAllowed("GET, HEAD"))
 	mux.HandleFunc("/v1/recommendation-sessions", h.methodNotAllowed("POST"))

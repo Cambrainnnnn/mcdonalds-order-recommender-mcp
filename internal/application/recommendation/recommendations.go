@@ -133,7 +133,7 @@ func normalizeCatalogOptions(offers []OfferVersion, official OfficialSupply) []d
 		if !product.Available || strings.TrimSpace(product.CanonicalProductID) == "" || strings.TrimSpace(product.Code) == "" {
 			continue
 		}
-		options = append(options, domain.CatalogOption{
+		option := domain.CatalogOption{
 			ID:      product.Code,
 			Channel: domain.OfficialChannel,
 			Products: []domain.CandidateProduct{{
@@ -143,7 +143,11 @@ func normalizeCatalogOptions(offers []OfferVersion, official OfficialSupply) []d
 			}},
 			Eligibility: domain.EligibilityEligible,
 			Warnings:    product.Warnings,
-		})
+		}
+		if product.Price != nil {
+			option.Price = domain.PriceQuote{Amount: *product.Price, Confidence: domain.PriceLive, QuotedAt: official.LoadedAt, Source: domain.OfficialChannel}
+		}
+		options = append(options, option)
 	}
 	return options
 }
@@ -171,10 +175,11 @@ func (s *Service) priceOfficialCandidates(
 				})
 			}
 			quote, err := s.officialPricing.Calculate(ctx, OfficialPriceRequest{
-				StoreCode: supply.StoreCode,
-				BECode:    supply.BECode,
-				OrderMode: requirement.OrderMode,
-				Items:     items,
+				StoreCode:       supply.StoreCode,
+				BECode:          supply.BECode,
+				OrderMode:       requirement.OrderMode,
+				ReservationDate: reservationDate(requirement),
+				Items:           items,
 			})
 			if err != nil {
 				pricingErrors++
@@ -188,6 +193,13 @@ func (s *Service) priceOfficialCandidates(
 		}
 	}
 	return priced, pricingErrors
+}
+
+func reservationDate(requirement domain.Requirement) string {
+	if requirement.TargetTime == nil {
+		return ""
+	}
+	return requirement.TargetTime.Format("2006-01-02 15:04")
 }
 
 func (s *Service) restoreReady(ctx context.Context, session *domain.Session) {
