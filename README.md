@@ -1,0 +1,227 @@
+# Meal Recommendation Service
+
+跨渠道智能点餐推荐服务的 Go MVP。当前版本已实现结构化需求、有界候选生成、硬约束过滤和三类推荐结果，真实套餐与官方算价数据源仍使用可替换 Port 和空数据占位 Adapter。
+
+## 架构
+
+```text
+cmd/api
+  -> adapters/inbound/httpapi
+      -> application/recommendation
+          -> domain/recommendation
+          <- application ports
+              <- adapters/outbound/*
+```
+
+- `internal/domain`：纯领域类型和确定性业务规则，不依赖 HTTP、数据库、MCP 或 LLM SDK。
+- `internal/application`：用例编排及由应用层拥有的 Port 接口。
+- `internal/adapters/inbound`：HTTP 等入站协议适配。
+- `internal/adapters/outbound`：数据库、LLM、麦当劳 MCP 等出站实现；当前提供内存 Session Repository。
+- `internal/infrastructure`：配置、ID 等技术设施。
+- `cmd/api`：唯一的依赖装配入口。
+
+接口定义在使用方所在的应用层。替换 PostgreSQL、LLM 或 MCP SDK 时，只需增加 Adapter，不修改领域层。
+
+## 当前仓库代码结构
+
+```text
+.
+├── cmd/
+│   └── api/
+│       └── main.go
+├── internal/
+│   ├── adapters/
+│   │   ├── inbound/
+│   │   │   └── httpapi/
+│   │   │       ├── handler.go
+│   │   │       ├── handler_test.go
+│   │   │       └── middleware.go
+│   │   └── outbound/
+│   │       └── memory/
+│   │           └── session_repository.go
+│   ├── application/
+│   │   └── recommendation/
+│   │       ├── ports.go
+│   │       ├── service.go
+│   │       └── service_test.go
+│   ├── domain/
+│   │   └── recommendation/
+│   │       ├── candidate.go
+│   │       ├── session.go
+│   │       └── session_test.go
+│   └── infrastructure/
+│       ├── config/
+│       │   └── config.go
+│       └── ids/
+│           └── random.go
+├── docs/
+│   └── mvp-architecture-design.md
+├── .gitignore
+├── go.mod
+├── Makefile
+└── README.md
+```
+
+### `cmd/api`
+
+服务的可执行程序入口，也是当前唯一的依赖装配位置。
+
+- 加载运行配置。
+- 创建内存仓储和应用服务。
+- 将应用服务注入 HTTP Adapter。
+- 启动 HTTP Server，并处理 `SIGINT`、`SIGTERM` 和优雅关闭。
+
+`main.go` 只负责组装对象，不承载推荐规则或业务流程。
+
+### `internal/domain/recommendation`
+
+不依赖数据库、HTTP、LLM 或 MCP SDK 的纯领域层。
+
+- `session.go`：定义推荐会话和结构化用餐需求，提供默认值、校验、完整性判断和会话状态更新。
+- `candidate.go` / `engine.go`：定义候选组合模型，并实现有界候选生成、硬约束过滤、可解释评分、Pareto 去重和三类结果选择。
+- `session_test.go`：验证领域默认值、会话生命周期和缺失字段判断。
+
+该层的推荐计算保持确定性和无外部 I/O。
+
+### `internal/application/recommendation`
+
+应用用例层，负责业务流程编排和事务边界。
+
+- `service.go` / `recommendations.go`：实现会话创建、读取、需求更新、过期处理，以及套餐加载、官方算价、候选排序的应用编排。
+- `ports.go`：定义应用层所需的出站接口及接口 DTO，包括会话仓储、需求抽取、人工套餐、官方菜单、官方算价和候选引擎。
+- `service_test.go`：通过可控时钟、固定 ID 和内存仓储测试应用流程。
+
+Port 由使用方——应用层定义。PostgreSQL、LLM 或 MCP Adapter 需要适配这些接口，而不是让应用层依赖具体 SDK 类型。
+
+### `internal/adapters/inbound/httpapi`
+
+HTTP 入站适配层，将 HTTP 请求转换为应用用例参数，并将应用结果转换为 JSON 响应。
+
+- `handler.go`：实现健康检查、会话创建/读取、结构化需求更新和推荐生成 API。
+- `middleware.go`：请求日志和 panic 恢复。
+- `handler_test.go`：使用 `httptest` 验证 HTTP 状态码和响应结构，不需要监听真实端口。
+
+该层只依赖应用用例接口，不直接访问仓储或外部 MCP。
+
+### `internal/adapters/outbound/memory`
+
+当前开发阶段的出站实现。
+
+- `session_repository.go`：线程安全的内存会话仓储，实现应用层的 `SessionRepository` Port，并在读写边界复制领域对象，避免调用方意外修改仓储内部状态。
+
+该实现会在进程退出后丢失数据。接入 PostgreSQL 时新增并注入 PostgreSQL Adapter 即可，不需要修改领域层和 HTTP 层。
+
+### `internal/infrastructure`
+
+与具体业务无关的基础设施代码。
+
+- `config/config.go`：读取并校验监听地址、会话有效期和关闭超时等环境变量。
+- `ids/random.go`：使用加密安全随机数生成会话 ID，实现应用层的 `IDGenerator` Port。
+
+### 根目录文件
+
+- `docs/mvp-architecture-design.md`：完整的 MVP 架构、数据模型和推荐算法设计文档。
+- `go.mod`：Go 模块定义，当前只使用标准库，没有第三方运行时依赖。
+- `Makefile`：提供 `run`、`test`、`vet`、`fmt` 和 `check` 命令。
+- `.gitignore`：忽略本地环境文件、构建产物、覆盖率结果和日志。
+
+### 当前实现范围
+
+已经实现：
+
+- 应用启动、配置加载和优雅关闭。
+- 健康检查。
+- 推荐会话创建、读取、结构化需求更新和过期判断。
+- 结构化需求及候选输出领域模型。
+- 第三方单套餐、第三方+官方补购、官方单品组合的有界候选生成。
+- 必选数量、排除项、预算、资格和货币等硬约束过滤。
+- 偏好、浪费、便利性、价格新鲜度和资格风险评分，以及 Pareto 去重。
+- “最低实付”“最符合口味”“性价比最高”三类不重复结果。
+- 内存会话仓储。
+- LLM、人工套餐、官方菜单、官方算价和候选引擎的可替换接口。
+- 领域、应用和 HTTP 层测试。
+
+尚未实现：
+
+- PostgreSQL Adapter 和数据库迁移。
+- 自然语言用户消息处理与需求 Patch。
+- LLM Requirement Extractor。
+- 人工套餐管理和导入。
+- 麦当劳 MCP Client Adapter。
+- 真实官方算价 Adapter 和推荐快照持久化。
+
+详细的外部依赖和后续增强项见 `todo.md`。
+
+## 运行
+
+要求 Go 1.22 或更高版本。
+
+```bash
+make check
+make run
+```
+
+默认监听 `:8080`。可用环境变量：
+
+- `APP_HTTP_ADDRESS`，默认 `:8080`
+- `APP_SESSION_TTL`，默认 `30m`
+- `APP_SHUTDOWN_TIMEOUT`，默认 `10s`
+
+## 当前 API
+
+健康检查：
+
+```bash
+curl http://localhost:8080/healthz
+```
+
+创建推荐会话：
+
+```bash
+curl -X POST http://localhost:8080/v1/recommendation-sessions \
+  -H 'Content-Type: application/json' \
+  -d '{"orderMode":"pickup","city":"上海市","storeKeyword":"中山公园"}'
+```
+
+读取推荐会话：
+
+```bash
+curl http://localhost:8080/v1/recommendation-sessions/{sessionId}
+```
+
+更新结构化用餐需求：
+
+```bash
+curl -X PUT http://localhost:8080/v1/recommendation-sessions/{sessionId}/requirement \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "orderMode":"pickup",
+    "location":{"storeCode":"store-1"},
+    "mustHave":[
+      {"resolvedProductId":"BIG_MAC","quantity":1},
+      {"resolvedProductId":"MCFLURRY","quantity":1}
+    ],
+    "budget":{"amount":4000,"currency":"CNY"}
+  }'
+```
+
+生成推荐：
+
+```bash
+curl -X POST http://localhost:8080/v1/recommendation-sessions/{sessionId}/recommendations
+```
+
+默认程序装配的是空数据占位 Adapter，因此在接入真实套餐源前会返回 `no_candidates`。算法闭环通过可控的 Port Stub 在测试中验证。
+
+## 已预留的可替换边界
+
+`internal/application/recommendation/ports.go` 定义了：
+
+- `SessionRepository`
+- `RequirementExtractor`
+- `OfferCatalog`
+- `OfficialCatalog`
+- `OfficialPricing`
+- `CandidateEngine`
+
+真实数据源、自然语言需求抽取、商品映射、套餐选择组和推荐快照等待办见 `todo.md`。
