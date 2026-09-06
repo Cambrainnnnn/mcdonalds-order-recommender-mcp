@@ -36,6 +36,16 @@ type Component struct {
 	ExtraPrice         int64  `json:"extraPrice,omitempty"`
 }
 
+// ChoiceGroup defines how many distinct components can be selected from a
+// group. Use the same minSelect and maxSelect value for an exact "n of m"
+// choice.
+type ChoiceGroup struct {
+	ID        string `json:"id"`
+	Name      string `json:"name,omitempty"`
+	MinSelect int    `json:"minSelect"`
+	MaxSelect int    `json:"maxSelect"`
+}
+
 // ValidTimeRule describes a daily availability window. Weekdays use Go's
 // time.Weekday numbering (Sunday=0); an empty list means every day. Start is
 // inclusive and End is exclusive, both in HH:MM format.
@@ -46,38 +56,40 @@ type ValidTimeRule struct {
 }
 
 type Offer struct {
-	ID          string             `json:"id"`
-	VersionID   string             `json:"versionId,omitempty"`
-	Version     int                `json:"version"`
-	Status      Status             `json:"status"`
-	Source      string             `json:"source"`
-	Title       string             `json:"title"`
-	Price       domain.Money       `json:"price"`
-	PurchaseURL string             `json:"purchaseUrl,omitempty"`
-	City        string             `json:"city,omitempty"`
-	StoreCodes  []string           `json:"storeCodes,omitempty"`
-	OrderModes  []domain.OrderMode `json:"orderModes,omitempty"`
-	ValidFrom   *time.Time         `json:"validFrom,omitempty"`
-	ValidUntil  *time.Time         `json:"validUntil,omitempty"`
-	ValidTimes  []ValidTimeRule    `json:"validTimes,omitempty"`
-	VerifiedAt  *time.Time         `json:"verifiedAt,omitempty"`
-	Components  []Component        `json:"components"`
-	CreatedAt   time.Time          `json:"createdAt"`
-	UpdatedAt   time.Time          `json:"updatedAt"`
+	ID           string             `json:"id"`
+	VersionID    string             `json:"versionId,omitempty"`
+	Version      int                `json:"version"`
+	Status       Status             `json:"status"`
+	Source       string             `json:"source"`
+	Title        string             `json:"title"`
+	Price        domain.Money       `json:"price"`
+	PurchaseURL  string             `json:"purchaseUrl,omitempty"`
+	City         string             `json:"city,omitempty"`
+	StoreCodes   []string           `json:"storeCodes,omitempty"`
+	OrderModes   []domain.OrderMode `json:"orderModes,omitempty"`
+	ValidFrom    *time.Time         `json:"validFrom,omitempty"`
+	ValidUntil   *time.Time         `json:"validUntil,omitempty"`
+	ValidTimes   []ValidTimeRule    `json:"validTimes,omitempty"`
+	VerifiedAt   *time.Time         `json:"verifiedAt,omitempty"`
+	ChoiceGroups []ChoiceGroup      `json:"choiceGroups,omitempty"`
+	Components   []Component        `json:"components"`
+	CreatedAt    time.Time          `json:"createdAt"`
+	UpdatedAt    time.Time          `json:"updatedAt"`
 }
 
 type CreateCommand struct {
-	Source      string
-	Title       string
-	Price       domain.Money
-	PurchaseURL string
-	City        string
-	StoreCodes  []string
-	OrderModes  []domain.OrderMode
-	ValidFrom   *time.Time
-	ValidUntil  *time.Time
-	ValidTimes  []ValidTimeRule
-	Components  []Component
+	Source       string
+	Title        string
+	Price        domain.Money
+	PurchaseURL  string
+	City         string
+	StoreCodes   []string
+	OrderModes   []domain.OrderMode
+	ValidFrom    *time.Time
+	ValidUntil   *time.Time
+	ValidTimes   []ValidTimeRule
+	ChoiceGroups []ChoiceGroup
+	Components   []Component
 }
 
 type UpdateCommand = CreateCommand
@@ -289,7 +301,7 @@ func commandOffer(id string, command CreateCommand, createdAt time.Time) *Offer 
 		ID: id, Status: StatusDraft, Source: strings.TrimSpace(command.Source), Title: strings.TrimSpace(command.Title),
 		Price: command.Price, PurchaseURL: strings.TrimSpace(command.PurchaseURL), City: strings.TrimSpace(command.City),
 		StoreCodes: command.StoreCodes, OrderModes: command.OrderModes, ValidFrom: command.ValidFrom,
-		ValidUntil: command.ValidUntil, ValidTimes: command.ValidTimes, Components: slices.Clone(command.Components), CreatedAt: createdAt, UpdatedAt: createdAt,
+		ValidUntil: command.ValidUntil, ValidTimes: command.ValidTimes, ChoiceGroups: slices.Clone(command.ChoiceGroups), Components: slices.Clone(command.Components), CreatedAt: createdAt, UpdatedAt: createdAt,
 	}
 }
 
@@ -328,15 +340,56 @@ func validateOffer(offer *Offer) error {
 	if len(offer.Components) == 0 {
 		return fmt.Errorf("%w: at least one component is required", ErrInvalidOffer)
 	}
+	groups := make(map[string]ChoiceGroup, len(offer.ChoiceGroups))
+	componentCounts := make(map[string]int, len(offer.ChoiceGroups))
+	variantCount := 1
+	for index := range offer.ChoiceGroups {
+		group := &offer.ChoiceGroups[index]
+		group.ID = strings.TrimSpace(group.ID)
+		group.Name = strings.TrimSpace(group.Name)
+		if !identity.Valid(group.ID) {
+			return fmt.Errorf("%w: choice group %d ID must be a snowflake string", ErrInvalidOffer, index+1)
+		}
+		if _, exists := groups[group.ID]; exists {
+			return fmt.Errorf("%w: duplicate choice group ID %q", ErrInvalidOffer, group.ID)
+		}
+		if group.MinSelect < 0 || group.MaxSelect <= 0 || group.MinSelect > group.MaxSelect {
+			return fmt.Errorf("%w: choice group %q requires 0 <= minSelect <= maxSelect and maxSelect > 0", ErrInvalidOffer, group.ID)
+		}
+		groups[group.ID] = *group
+	}
 	for index := range offer.Components {
 		offer.Components[index].CanonicalProductID = strings.TrimSpace(offer.Components[index].CanonicalProductID)
+		offer.Components[index].ChoiceGroupID = strings.TrimSpace(offer.Components[index].ChoiceGroupID)
 		component := offer.Components[index]
-		if component.ChoiceGroupID != "" && !identity.Valid(component.ChoiceGroupID) {
-			return fmt.Errorf("%w: choiceGroupId must be a snowflake string", ErrInvalidOffer)
+		if component.ExtraPrice < 0 {
+			return fmt.Errorf("%w: component %d extraPrice must not be negative", ErrInvalidOffer, index+1)
+		}
+		if component.ChoiceGroupID != "" {
+			if !identity.Valid(component.ChoiceGroupID) {
+				return fmt.Errorf("%w: component %d choiceGroupId must be a snowflake string", ErrInvalidOffer, index+1)
+			}
+			if len(groups) > 0 {
+				if _, exists := groups[component.ChoiceGroupID]; !exists {
+					return fmt.Errorf("%w: component %d references unknown choice group %q", ErrInvalidOffer, index+1, component.ChoiceGroupID)
+				}
+				componentCounts[component.ChoiceGroupID]++
+			}
 		}
 		if !identity.Valid(component.CanonicalProductID) || component.Quantity <= 0 {
 			return fmt.Errorf("%w: component product ID must be a snowflake string and quantity must be positive", ErrInvalidOffer)
 		}
+	}
+	for _, group := range offer.ChoiceGroups {
+		optionCount := componentCounts[group.ID]
+		if group.MaxSelect > optionCount {
+			return fmt.Errorf("%w: choice group %q maxSelect %d exceeds its %d components", ErrInvalidOffer, group.ID, group.MaxSelect, optionCount)
+		}
+		combinations := selectionCombinationCount(optionCount, group.MinSelect, group.MaxSelect, maxOfferVariants)
+		if combinations == 0 || variantCount > maxOfferVariants/combinations {
+			return fmt.Errorf("%w: choice groups produce more than %d combinations", ErrInvalidOffer, maxOfferVariants)
+		}
+		variantCount *= combinations
 	}
 	for _, mode := range offer.OrderModes {
 		if mode == "" || !mode.Valid() {
@@ -370,6 +423,27 @@ func validateOffer(offer *Offer) error {
 		}
 	}
 	return nil
+}
+
+const maxOfferVariants = 10_000
+
+func selectionCombinationCount(options, minSelect, maxSelect, limit int) int {
+	total := 0
+	for selected := minSelect; selected <= maxSelect; selected++ {
+		combination := 1
+		for i := 1; i <= selected; i++ {
+			factor := options - selected + i
+			if combination > limit*i/factor {
+				return limit + 1
+			}
+			combination = combination * factor / i
+		}
+		total += combination
+		if total > limit {
+			return limit + 1
+		}
+	}
+	return total
 }
 
 func MatchesValidTime(rules []ValidTimeRule, at time.Time) bool {

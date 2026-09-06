@@ -139,9 +139,18 @@ func recommendationOffer(offer *appoffers.Offer, staleAfter time.Duration, now t
 	}
 	return apprec.OfferVersion{
 		ID: offer.VersionID, Source: offer.Source, Title: offer.Title,
-		Price:      domain.PriceQuote{Amount: offer.Price, Confidence: confidence, QuotedAt: quotedAt, Source: offer.Source},
-		Components: components, Eligibility: domain.EligibilityEligible, PurchaseURL: offer.PurchaseURL, Warnings: warnings,
+		Price:        domain.PriceQuote{Amount: offer.Price, Confidence: confidence, QuotedAt: quotedAt, Source: offer.Source},
+		ChoiceGroups: recommendationChoiceGroups(offer.ChoiceGroups), Components: components,
+		Eligibility: domain.EligibilityEligible, PurchaseURL: offer.PurchaseURL, Warnings: warnings,
 	}
+}
+
+func recommendationChoiceGroups(groups []appoffers.ChoiceGroup) []apprec.OfferChoiceGroup {
+	result := make([]apprec.OfferChoiceGroup, 0, len(groups))
+	for _, group := range groups {
+		result = append(result, apprec.OfferChoiceGroup{ID: group.ID, Name: group.Name, MinSelect: group.MinSelect, MaxSelect: group.MaxSelect})
+	}
+	return result
 }
 
 func cloneOffer(offer *appoffers.Offer) *appoffers.Offer {
@@ -152,6 +161,7 @@ func cloneOffer(offer *appoffers.Offer) *appoffers.Offer {
 	clone.StoreCodes = slices.Clone(offer.StoreCodes)
 	clone.OrderModes = slices.Clone(offer.OrderModes)
 	clone.Components = slices.Clone(offer.Components)
+	clone.ChoiceGroups = slices.Clone(offer.ChoiceGroups)
 	clone.ValidTimes = slices.Clone(offer.ValidTimes)
 	for index := range clone.ValidTimes {
 		clone.ValidTimes[index].Weekdays = slices.Clone(offer.ValidTimes[index].Weekdays)

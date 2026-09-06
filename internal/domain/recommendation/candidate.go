@@ -32,6 +32,8 @@ type CandidateProduct struct {
 	CanonicalProductID string `json:"canonicalProductId"`
 	ProductCode        string `json:"productCode,omitempty"`
 	Quantity           int    `json:"quantity"`
+	ChoiceGroupID      string `json:"choiceGroupId,omitempty"`
+	ExtraPrice         int64  `json:"extraPrice,omitempty"`
 }
 
 type PurchaseLeg struct {

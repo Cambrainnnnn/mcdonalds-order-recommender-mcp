@@ -238,7 +238,11 @@ func toRecommendationOffer(offer *appoffers.Offer, staleAfter time.Duration, now
 			warnings = append(warnings, "人工套餐价格已超过复核时限")
 		}
 	}
-	return apprec.OfferVersion{ID: offer.VersionID, Source: offer.Source, Title: offer.Title, Price: domain.PriceQuote{Amount: offer.Price, Confidence: confidence, QuotedAt: quotedAt, Source: offer.Source}, Components: components, Eligibility: domain.EligibilityEligible, PurchaseURL: offer.PurchaseURL, Warnings: warnings}
+	groups := make([]apprec.OfferChoiceGroup, 0, len(offer.ChoiceGroups))
+	for _, group := range offer.ChoiceGroups {
+		groups = append(groups, apprec.OfferChoiceGroup{ID: group.ID, Name: group.Name, MinSelect: group.MinSelect, MaxSelect: group.MaxSelect})
+	}
+	return apprec.OfferVersion{ID: offer.VersionID, Source: offer.Source, Title: offer.Title, Price: domain.PriceQuote{Amount: offer.Price, Confidence: confidence, QuotedAt: quotedAt, Source: offer.Source}, ChoiceGroups: groups, Components: components, Eligibility: domain.EligibilityEligible, PurchaseURL: offer.PurchaseURL, Warnings: warnings}
 }
 
 func offerCacheKey(r domain.Requirement) string {

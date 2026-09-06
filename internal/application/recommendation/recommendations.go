@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math"
+	"slices"
 	"strings"
 
 	domain "meal-recommendation/internal/domain/recommendation"
@@ -61,9 +63,14 @@ func (s *Service) GenerateRecommendations(ctx context.Context, id string) (*Reco
 		return nil, fmt.Errorf("load official supply: %w", err)
 	}
 
+	options, err := normalizeCatalogOptions(offers, official)
+	if err != nil {
+		s.restoreReady(ctx, session)
+		return nil, fmt.Errorf("normalize catalog options: %w", err)
+	}
 	generated, err := s.engine.Generate(domain.EngineInput{
 		Requirement: session.Requirement,
-		Options:     normalizeCatalogOptions(offers, official),
+		Options:     options,
 	})
 	if err != nil {
 		s.restoreReady(ctx, session)
@@ -97,37 +104,14 @@ func (s *Service) GenerateRecommendations(ctx context.Context, id string) (*Reco
 	}, nil
 }
 
-func normalizeCatalogOptions(offers []OfferVersion, official OfficialSupply) []domain.CatalogOption {
+func normalizeCatalogOptions(offers []OfferVersion, official OfficialSupply) ([]domain.CatalogOption, error) {
 	options := make([]domain.CatalogOption, 0, len(offers)+len(official.Products))
 	for _, offer := range offers {
-		products := make([]domain.CandidateProduct, 0, len(offer.Components))
-		for _, component := range offer.Components {
-			if strings.TrimSpace(component.CanonicalProductID) == "" {
-				continue
-			}
-			products = append(products, domain.CandidateProduct{
-				CanonicalProductID: component.CanonicalProductID,
-				Quantity:           max(1, component.Quantity),
-			})
+		variants, err := normalizeOfferVariants(offer)
+		if err != nil {
+			return nil, err
 		}
-		eligibility := offer.Eligibility
-		if eligibility == "" {
-			eligibility = domain.EligibilityEligible
-		}
-		channel := strings.TrimSpace(offer.Source)
-		if channel == "" {
-			channel = "manual_offer"
-		}
-		options = append(options, domain.CatalogOption{
-			ID:             offer.ID,
-			Channel:        channel,
-			OfferVersionID: offer.ID,
-			Products:       products,
-			Price:          offer.Price,
-			Eligibility:    eligibility,
-			PurchaseURL:    offer.PurchaseURL,
-			Warnings:       offer.Warnings,
-		})
+		options = append(options, variants...)
 	}
 	for _, product := range official.Products {
 		if !product.Available || strings.TrimSpace(product.CanonicalProductID) == "" || strings.TrimSpace(product.Code) == "" {
@@ -149,7 +133,149 @@ func normalizeCatalogOptions(offers []OfferVersion, official OfficialSupply) []d
 		}
 		options = append(options, option)
 	}
-	return options
+	return options, nil
+}
+
+const maxNormalizedOfferVariants = 10_000
+
+type offerVariant struct {
+	products   []domain.CandidateProduct
+	extraPrice int64
+}
+
+func normalizeOfferVariants(offer OfferVersion) ([]domain.CatalogOption, error) {
+	eligibility := offer.Eligibility
+	if eligibility == "" {
+		eligibility = domain.EligibilityEligible
+	}
+	channel := strings.TrimSpace(offer.Source)
+	if channel == "" {
+		channel = "manual_offer"
+	}
+
+	fixed := offerVariant{}
+	groupComponents := make(map[string][]OfferComponent, len(offer.ChoiceGroups))
+	for _, component := range offer.Components {
+		if strings.TrimSpace(component.CanonicalProductID) == "" {
+			continue
+		}
+		// Published legacy offers did not carry choice-group rules. Preserve their
+		// previous behavior by treating every component as fixed.
+		if len(offer.ChoiceGroups) == 0 || component.ChoiceGroupID == "" {
+			fixed.products = append(fixed.products, candidateProduct(component))
+			// A legacy grouped component has no selection rule, so its historical
+			// extraPrice was never charged. Keep that behavior until the offer is
+			// updated with explicit choiceGroups.
+			if len(offer.ChoiceGroups) > 0 || component.ChoiceGroupID == "" {
+				if err := addExtraPrice(&fixed.extraPrice, component.ExtraPrice); err != nil {
+					return nil, fmt.Errorf("offer %q: %w", offer.ID, err)
+				}
+			}
+			continue
+		}
+		groupComponents[component.ChoiceGroupID] = append(groupComponents[component.ChoiceGroupID], component)
+	}
+
+	variants := []offerVariant{fixed}
+	for _, group := range offer.ChoiceGroups {
+		components := groupComponents[group.ID]
+		if group.MinSelect < 0 || group.MaxSelect <= 0 || group.MinSelect > group.MaxSelect || group.MaxSelect > len(components) {
+			return nil, fmt.Errorf("offer %q has invalid choice group %q", offer.ID, group.ID)
+		}
+		selectionCount := boundedSelectionCount(len(components), group.MinSelect, group.MaxSelect, maxNormalizedOfferVariants)
+		if selectionCount == 0 || len(variants) > maxNormalizedOfferVariants/selectionCount {
+			return nil, fmt.Errorf("offer %q produces more than %d choice combinations", offer.ID, maxNormalizedOfferVariants)
+		}
+		selections := componentSelections(components, group.MinSelect, group.MaxSelect)
+		next := make([]offerVariant, 0, len(variants)*len(selections))
+		for _, variant := range variants {
+			for _, selection := range selections {
+				combined := offerVariant{products: slices.Clone(variant.products), extraPrice: variant.extraPrice}
+				for _, component := range selection {
+					combined.products = append(combined.products, candidateProduct(component))
+					if err := addExtraPrice(&combined.extraPrice, component.ExtraPrice); err != nil {
+						return nil, fmt.Errorf("offer %q: %w", offer.ID, err)
+					}
+				}
+				next = append(next, combined)
+			}
+		}
+		variants = next
+	}
+
+	result := make([]domain.CatalogOption, 0, len(variants))
+	for index, variant := range variants {
+		price := offer.Price
+		if price.Amount.Amount < 0 {
+			return nil, fmt.Errorf("offer %q has a negative base price", offer.ID)
+		}
+		if variant.extraPrice > math.MaxInt64-price.Amount.Amount {
+			return nil, fmt.Errorf("offer %q price overflows", offer.ID)
+		}
+		price.Amount.Amount += variant.extraPrice
+		result = append(result, domain.CatalogOption{
+			ID: fmt.Sprintf("%s#%d", offer.ID, index), Channel: channel, OfferVersionID: offer.ID,
+			Products: variant.products, Price: price, Eligibility: eligibility,
+			PurchaseURL: offer.PurchaseURL, Warnings: slices.Clone(offer.Warnings),
+		})
+	}
+	return result, nil
+}
+
+func candidateProduct(component OfferComponent) domain.CandidateProduct {
+	return domain.CandidateProduct{
+		CanonicalProductID: component.CanonicalProductID,
+		Quantity:           max(1, component.Quantity),
+		ChoiceGroupID:      component.ChoiceGroupID,
+		ExtraPrice:         component.ExtraPrice,
+	}
+}
+
+func addExtraPrice(total *int64, amount int64) error {
+	if amount < 0 || *total > math.MaxInt64-amount {
+		return errors.New("component extra price is invalid")
+	}
+	*total += amount
+	return nil
+}
+
+func componentSelections(components []OfferComponent, minSelect, maxSelect int) [][]OfferComponent {
+	result := make([][]OfferComponent, 0)
+	for count := minSelect; count <= maxSelect; count++ {
+		appendComponentSelections(components, count, 0, nil, &result)
+	}
+	return result
+}
+
+func boundedSelectionCount(options, minSelect, maxSelect, limit int) int {
+	total := 0
+	for selected := minSelect; selected <= maxSelect; selected++ {
+		combination := 1
+		for i := 1; i <= selected; i++ {
+			factor := options - selected + i
+			if combination > limit*i/factor {
+				return limit + 1
+			}
+			combination = combination * factor / i
+		}
+		total += combination
+		if total > limit {
+			return limit + 1
+		}
+	}
+	return total
+}
+
+func appendComponentSelections(components []OfferComponent, remaining, start int, current []OfferComponent, result *[][]OfferComponent) {
+	if remaining == 0 {
+		*result = append(*result, slices.Clone(current))
+		return
+	}
+	for index := start; index <= len(components)-remaining; index++ {
+		current = append(current, components[index])
+		appendComponentSelections(components, remaining-1, index+1, current, result)
+		current = current[:len(current)-1]
+	}
 }
 
 func (s *Service) priceOfficialCandidates(

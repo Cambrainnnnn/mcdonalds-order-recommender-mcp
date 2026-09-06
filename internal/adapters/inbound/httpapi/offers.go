@@ -18,21 +18,22 @@ import (
 )
 
 type offerRequest struct {
-	Source      string                    `json:"source"`
-	Title       string                    `json:"title"`
-	Price       domain.Money              `json:"price"`
-	PurchaseURL string                    `json:"purchaseUrl"`
-	City        string                    `json:"city"`
-	StoreCodes  []string                  `json:"storeCodes"`
-	OrderModes  []domain.OrderMode        `json:"orderModes"`
-	ValidFrom   *time.Time                `json:"validFrom"`
-	ValidUntil  *time.Time                `json:"validUntil"`
-	ValidTimes  []appoffers.ValidTimeRule `json:"validTimes"`
-	Components  []appoffers.Component     `json:"components"`
+	Source       string                    `json:"source"`
+	Title        string                    `json:"title"`
+	Price        domain.Money              `json:"price"`
+	PurchaseURL  string                    `json:"purchaseUrl"`
+	City         string                    `json:"city"`
+	StoreCodes   []string                  `json:"storeCodes"`
+	OrderModes   []domain.OrderMode        `json:"orderModes"`
+	ValidFrom    *time.Time                `json:"validFrom"`
+	ValidUntil   *time.Time                `json:"validUntil"`
+	ValidTimes   []appoffers.ValidTimeRule `json:"validTimes"`
+	ChoiceGroups []appoffers.ChoiceGroup   `json:"choiceGroups"`
+	Components   []appoffers.Component     `json:"components"`
 }
 
 func (r offerRequest) command() appoffers.CreateCommand {
-	return appoffers.CreateCommand{Source: r.Source, Title: r.Title, Price: r.Price, PurchaseURL: r.PurchaseURL, City: r.City, StoreCodes: r.StoreCodes, OrderModes: r.OrderModes, ValidFrom: r.ValidFrom, ValidUntil: r.ValidUntil, ValidTimes: r.ValidTimes, Components: r.Components}
+	return appoffers.CreateCommand{Source: r.Source, Title: r.Title, Price: r.Price, PurchaseURL: r.PurchaseURL, City: r.City, StoreCodes: r.StoreCodes, OrderModes: r.OrderModes, ValidFrom: r.ValidFrom, ValidUntil: r.ValidUntil, ValidTimes: r.ValidTimes, ChoiceGroups: r.ChoiceGroups, Components: r.Components}
 }
 
 func (h *Handler) registerOfferAdminRoutes(mux *http.ServeMux) {
@@ -178,6 +179,12 @@ func decodeOfferCSV(reader io.Reader) ([]appoffers.CreateCommand, error) {
 		if err := json.Unmarshal([]byte(get("components_json")), &components); err != nil {
 			return nil, fmt.Errorf("row %d invalid components_json: %w", rowIndex+2, err)
 		}
+		var choiceGroups []appoffers.ChoiceGroup
+		if value := get("choice_groups_json"); value != "" {
+			if err := json.Unmarshal([]byte(value), &choiceGroups); err != nil {
+				return nil, fmt.Errorf("row %d invalid choice_groups_json: %w", rowIndex+2, err)
+			}
+		}
 		var validTimes []appoffers.ValidTimeRule
 		if value := get("valid_time_rules_json"); value != "" {
 			if err := json.Unmarshal([]byte(value), &validTimes); err != nil {
@@ -196,7 +203,7 @@ func decodeOfferCSV(reader io.Reader) ([]appoffers.CreateCommand, error) {
 		for _, mode := range splitPipe(get("order_modes")) {
 			modes = append(modes, domain.OrderMode(mode))
 		}
-		commands = append(commands, appoffers.CreateCommand{Source: get("source"), Title: get("title"), Price: domain.Money{Amount: amount, Currency: get("currency")}, PurchaseURL: get("purchase_url"), City: get("city"), StoreCodes: splitPipe(get("store_codes")), OrderModes: modes, ValidFrom: validFrom, ValidUntil: validUntil, ValidTimes: validTimes, Components: components})
+		commands = append(commands, appoffers.CreateCommand{Source: get("source"), Title: get("title"), Price: domain.Money{Amount: amount, Currency: get("currency")}, PurchaseURL: get("purchase_url"), City: get("city"), StoreCodes: splitPipe(get("store_codes")), OrderModes: modes, ValidFrom: validFrom, ValidUntil: validUntil, ValidTimes: validTimes, ChoiceGroups: choiceGroups, Components: components})
 	}
 	return commands, nil
 }

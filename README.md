@@ -348,13 +348,37 @@ POST /v1/admin/offers/{offerId}/disable
 curl http://localhost:8080/v1/admin/offers
 ```
 
+创建“3 个主食中任选 2 个”，其中部分规格加价的套餐：
+
+```bash
+curl -X POST http://localhost:8080/v1/admin/offers \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "source":"meituan",
+    "title":"主食三选二",
+    "price":{"amount":2290,"currency":"CNY"},
+    "choiceGroups":[
+      {"id":"221458923456789010","name":"主食任选2件","minSelect":2,"maxSelect":2}
+    ],
+    "components":[
+      {"canonicalProductId":"221458923456789011","quantity":1,"choiceGroupId":"221458923456789010"},
+      {"canonicalProductId":"221458923456789012","quantity":1,"choiceGroupId":"221458923456789010","extraPrice":100},
+      {"canonicalProductId":"221458923456789013","quantity":1,"choiceGroupId":"221458923456789010","extraPrice":400}
+    ]
+  }'
+```
+
+`choiceGroups` 定义选择规则；精确“m 中选 n”时将 `minSelect`、`maxSelect` 都设为 `n`。`components` 中没有 `choiceGroupId` 的是固定项，有该字段的是对应组的可选项。`extraPrice` 使用最小货币单位，并只在该项被选中时叠加到套餐基础 `price`；不同规格应作为不同标准单品录入，再分别设置加价。一次选择不能重复选择同一个组件。单套餐最多展开 10,000 种合法组合，超过时创建或修改会被拒绝。
+
+兼容旧数据：没有 `choiceGroups` 的历史套餐仍把所有组成项视为固定项，也不会开始收取历史上未生效的分组项 `extraPrice`；需要启用选择与加价时，应补录完整的选择组规则。
+
 CSV 导入使用 `Content-Type: text/csv`，列为：
 
 ```text
-source,title,price_amount,currency,purchase_url,city,store_codes,order_modes,valid_from,valid_until,valid_time_rules_json,components_json
+source,title,price_amount,currency,purchase_url,city,store_codes,order_modes,valid_from,valid_until,valid_time_rules_json,choice_groups_json,components_json
 ```
 
-`store_codes` 和 `order_modes` 使用 `|` 分隔；有效期使用 RFC3339。`valid_time_rules_json` 是可选 JSON 数组，星期使用 `0`（周日）到 `6`（周六），起止时刻使用 `HH:MM`，例如 `[{"weekdays":[1,2,3,4,5],"start":"10:30","end":"14:00"}]`；`components_json` 是 JSON 数组。
+`store_codes` 和 `order_modes` 使用 `|` 分隔；有效期使用 RFC3339。`valid_time_rules_json` 是可选 JSON 数组，星期使用 `0`（周日）到 `6`（周六），起止时刻使用 `HH:MM`，例如 `[{"weekdays":[1,2,3,4,5],"start":"10:30","end":"14:00"}]`；`choice_groups_json` 是可选的选择组 JSON 数组，`components_json` 是组成项 JSON 数组。
 
 ## 已预留的可替换边界
 
@@ -367,4 +391,4 @@ source,title,price_amount,currency,purchase_url,city,store_codes,order_modes,val
 - `OfficialPricing`
 - `CandidateEngine`
 
-真实数据源、自然语言需求抽取、商品映射、套餐选择组和推荐快照等待办见 `todo.md`。
+真实数据源、自然语言需求抽取、商品映射和推荐快照等待办见 `todo.md`。

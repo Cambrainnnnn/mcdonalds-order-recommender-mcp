@@ -54,14 +54,22 @@ type CandidateEngine interface {
 }
 
 type OfferVersion struct {
-	ID          string
-	Source      string
-	Title       string
-	Price       domain.PriceQuote
-	Components  []OfferComponent
-	Eligibility domain.EligibilityStatus
-	PurchaseURL string
-	Warnings    []string
+	ID           string
+	Source       string
+	Title        string
+	Price        domain.PriceQuote
+	ChoiceGroups []OfferChoiceGroup
+	Components   []OfferComponent
+	Eligibility  domain.EligibilityStatus
+	PurchaseURL  string
+	Warnings     []string
+}
+
+type OfferChoiceGroup struct {
+	ID        string
+	Name      string
+	MinSelect int
+	MaxSelect int
 }
 
 type OfferComponent struct {

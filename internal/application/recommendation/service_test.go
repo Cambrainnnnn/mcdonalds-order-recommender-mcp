@@ -126,3 +126,51 @@ func TestServiceGeneratesRecommendationsAndCompletesSession(t *testing.T) {
 		t.Fatalf("session state = %q, want %q", loaded.State, domain.SessionCompleted)
 	}
 }
+
+func TestServiceRecommendsOnlySelectedChoicesAtTheirSurchargedPrice(t *testing.T) {
+	repository := memory.NewSessionRepository()
+	now := time.Date(2026, time.September, 6, 12, 0, 0, 0, time.UTC)
+	service := app.NewService(
+		repository,
+		fixedID("session-choice"),
+		func() time.Time { return now },
+		30*time.Minute,
+		app.WithRecommendationDependencies(
+			staticOffers{{
+				ID: "offer-choice", Source: "meituan",
+				Price:        domain.PriceQuote{Amount: domain.Money{Amount: 1000, Currency: "CNY"}, Confidence: domain.PriceVerifiedToday},
+				ChoiceGroups: []app.OfferChoiceGroup{{ID: "main", MinSelect: 1, MaxSelect: 1}},
+				Components: []app.OfferComponent{
+					{CanonicalProductID: "regular", Quantity: 1, ChoiceGroupID: "main"},
+					{CanonicalProductID: "premium", Quantity: 1, ChoiceGroupID: "main", ExtraPrice: 300},
+				},
+				Eligibility: domain.EligibilityEligible,
+			}},
+			staticOfficial(app.OfficialSupply{}), staticPricing{}, domain.NewEngine(), domain.ScoringPolicy{Version: "test"},
+		),
+	)
+	created, err := service.StartSession(context.Background(), app.StartSessionCommand{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = service.UpdateRequirement(context.Background(), created.ID, domain.Requirement{
+		OrderMode: domain.OrderModePickup,
+		Location:  domain.Location{StoreCode: "store-1"},
+		MustHave:  []domain.ProductRequest{{ResolvedProductID: "premium", Quantity: 1}},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	response, err := service.GenerateRecommendations(context.Background(), created.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	candidate := response.Recommendations[0].Candidate
+	if candidate.TotalPrice.Amount != 1300 || len(candidate.PurchaseLegs[0].Products) != 1 {
+		t.Fatalf("candidate=%#v, want selected premium item only at 1300", candidate)
+	}
+	selected := candidate.PurchaseLegs[0].Products[0]
+	if selected.CanonicalProductID != "premium" || selected.ChoiceGroupID != "main" || selected.ExtraPrice != 300 {
+		t.Fatalf("selected=%#v", selected)
+	}
+}

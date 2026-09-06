@@ -2,6 +2,8 @@ package offers_test
 
 import (
 	"context"
+	"errors"
+	"slices"
 	"testing"
 	"time"
 
@@ -132,5 +134,52 @@ func TestOfferRejectsInvalidDailyWindow(t *testing.T) {
 	})
 	if err == nil {
 		t.Fatal("Create() should reject an empty daily window")
+	}
+}
+
+func TestOfferValidatesExactChoiceGroupsAndSurcharges(t *testing.T) {
+	repository := memory.NewOfferRepository(time.Now, 24*time.Hour)
+	service := appoffers.NewService(repository, fixedID("221458923456789099"), time.Now)
+	command := appoffers.CreateCommand{
+		Source: "meituan", Title: "小食三选二", Price: domain.Money{Amount: 1000, Currency: "CNY"},
+		ChoiceGroups: []appoffers.ChoiceGroup{{ID: "221458923456789010", Name: "小食三选二", MinSelect: 2, MaxSelect: 2}},
+		Components: []appoffers.Component{
+			{CanonicalProductID: "221458923456789011", Quantity: 1, ChoiceGroupID: "221458923456789010"},
+			{CanonicalProductID: "221458923456789012", Quantity: 1, ChoiceGroupID: "221458923456789010", ExtraPrice: 100},
+			{CanonicalProductID: "221458923456789013", Quantity: 1, ChoiceGroupID: "221458923456789010", ExtraPrice: 200},
+		},
+	}
+	offer, err := service.Create(context.Background(), command)
+	if err != nil {
+		t.Fatalf("Create() error = %v", err)
+	}
+	if offer.ChoiceGroups[0].Name != "小食三选二" || offer.Components[2].ExtraPrice != 200 {
+		t.Fatalf("offer=%#v", offer)
+	}
+
+	invalid := command
+	invalid.Components = slices.Clone(command.Components)
+	invalid.Components[0].ChoiceGroupID = "221458923456789099"
+	if _, err := service.Create(context.Background(), invalid); !errors.Is(err, appoffers.ErrInvalidOffer) {
+		t.Fatalf("unknown choice group accepted: %v", err)
+	}
+
+	invalid = command
+	invalid.Components = slices.Clone(command.Components)
+	invalid.Components[0].ExtraPrice = -1
+	if _, err := service.Create(context.Background(), invalid); !errors.Is(err, appoffers.ErrInvalidOffer) {
+		t.Fatalf("negative surcharge accepted: %v", err)
+	}
+
+	invalid = command
+	invalid.ChoiceGroups = []appoffers.ChoiceGroup{{ID: "221458923456789010", MinSelect: 4, MaxSelect: 4}}
+	if _, err := service.Create(context.Background(), invalid); !errors.Is(err, appoffers.ErrInvalidOffer) {
+		t.Fatalf("oversized selection accepted: %v", err)
+	}
+
+	legacy := command
+	legacy.ChoiceGroups = nil
+	if _, err := service.Create(context.Background(), legacy); err != nil {
+		t.Fatalf("legacy grouped components should remain valid: %v", err)
 	}
 }

@@ -261,11 +261,13 @@ func candidateKey(candidate Candidate) string {
 	for _, leg := range candidate.PurchaseLegs {
 		products := slices.Clone(leg.Products)
 		sort.Slice(products, func(i, j int) bool {
-			return products[i].CanonicalProductID+products[i].ProductCode < products[j].CanonicalProductID+products[j].ProductCode
+			left := fmt.Sprintf("%s:%s:%d:%s:%d", products[i].CanonicalProductID, products[i].ProductCode, products[i].Quantity, products[i].ChoiceGroupID, products[i].ExtraPrice)
+			right := fmt.Sprintf("%s:%s:%d:%s:%d", products[j].CanonicalProductID, products[j].ProductCode, products[j].Quantity, products[j].ChoiceGroupID, products[j].ExtraPrice)
+			return left < right
 		})
 		legParts := []string{leg.Channel, leg.OfferVersionID}
 		for _, product := range products {
-			legParts = append(legParts, fmt.Sprintf("%s:%s:%d", product.CanonicalProductID, product.ProductCode, product.Quantity))
+			legParts = append(legParts, fmt.Sprintf("%s:%s:%d:%s:%d", product.CanonicalProductID, product.ProductCode, product.Quantity, product.ChoiceGroupID, product.ExtraPrice))
 		}
 		parts = append(parts, strings.Join(legParts, ":"))
 	}
