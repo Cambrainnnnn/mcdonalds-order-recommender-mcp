@@ -318,9 +318,6 @@ func (s *Service) validateProducts(ctx context.Context, offer *Offer) error {
 		if err != nil {
 			return fmt.Errorf("look up component product: %w", err)
 		}
-		if p.Status != product.StatusActive {
-			return fmt.Errorf("%w: component %d product %q is disabled", ErrInvalidOffer, index+1, p.ID)
-		}
 		if !p.Supports(product.SalesScopeOfferComponent) {
 			return fmt.Errorf("%w: component %d product %q is not available as an offer component", ErrInvalidOffer, index+1, p.ID)
 		}

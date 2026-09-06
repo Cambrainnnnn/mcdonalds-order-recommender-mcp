@@ -266,7 +266,7 @@ curl -X POST http://localhost:8080/v1/recommendation-sessions/{sessionId}/recomm
 | `description` | 可选，运营备注，最多 2000 字符 |
 | `price` | 可选参考单价，使用最小货币单位，例如 `{"amount":999900,"currency":"CNY"}` 表示 9999 元 |
 | `salesScopes` | 销售范围数组：`standalone` 表示可单卖，`offer_component` 表示可作为套餐组件；创建时省略则默认两者都有 |
-| `status` | 生命周期状态：`active` 或 `disabled`；创建默认 `active`。`disabled` 表示完全不可用，不表示“仅不可单卖” |
+| `status` | 单品目录状态：`active` 或 `disabled`；创建默认 `active`。`disabled` 会从普通单品选择目录中隐藏，但不影响引用它的套餐 |
 | `createdAt` / `updatedAt` | 服务端生成的 UTC 时间 |
 
 同一品牌、名称、规格的组合不可重复（忽略大小写）；不同规格可以分别录入。单品的 `price` 是参考单价，不表示特定渠道的实时价格；渠道价、门店库存或优惠有效期不属于单品主数据。仅作为套餐组成出售的活动单品使用 `salesScopes:["offer_component"]`。当前实现单品主数据与套餐关联，官方商品代码映射和 MCP 自动对齐仍需后续实现。别名当前用于单品查询，不会自动解析推荐请求中的自然语言。
@@ -314,9 +314,9 @@ curl --get 'http://localhost:8080/v1/admin/products' \
   --data-urlencode 'brand=mcd' --data-urlencode 'q=中薯'
 ```
 
-修改接口要求提供 `brand`、`name`、`specification`；省略 `category`、`aliases`、`description`、`price` 会清空这些字段，省略 `salesScopes` 或 `status` 则保留原值。传入 `status=disabled` 会完全停用，传入 `active` 恢复。没有物理删除接口，以保留套餐引用。
+修改接口要求提供 `brand`、`name`、`specification`；省略 `category`、`aliases`、`description`、`price` 会清空这些字段，省略 `salesScopes` 或 `status` 则保留原值。传入 `status=disabled` 会从普通单品选择目录中隐藏，传入 `active` 恢复。没有物理删除接口，以保留套餐引用。
 
-套餐创建、草稿修改、CSV 导入、复核、发布及再核验会校验组成单品存在、处于启用状态且包含 `offer_component` 销售范围，失败返回 `invalid_offer`（CSV 导入按行报告）。停用单品不会自动下架已经发布的套餐，需要单独调用套餐下架接口。
+套餐创建、草稿修改、CSV 导入、复核、发布及再核验只校验组成单品存在且包含 `offer_component` 销售范围，失败返回 `invalid_offer`（CSV 导入按行报告）。单品的 `active`/`disabled` 状态与套餐生命周期相互独立：停用单品不会影响已有套餐，也不会阻止包含它的套餐被创建、修改、复核、发布或再核验。
 
 历史 `manual:mcd:*` 套餐保持可查询；在修改、复核或发布前，可通过新增接口指定相同 `id` 并补齐餐品信息，例如 `"id":"manual:mcd:fries_medium"`。自定义 ID 限 1–128 个字母、数字、冒号、下划线或连字符，以字母或数字开头，统一为小写；普通新增建议省略 `id`。补录前需确认名称与规格，服务不会根据旧 ID 自动猜测餐品资料。
 

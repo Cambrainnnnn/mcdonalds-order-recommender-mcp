@@ -63,41 +63,22 @@ func TestOfferProductReferences(t *testing.T) {
 	if _, err := catalog.Update(ctx, p.ID, fields); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := service.Create(ctx, command); !errors.Is(err, offers.ErrInvalidOffer) {
-		t.Fatalf("disabled product accepted: %v", err)
+	if _, err := service.Create(ctx, command); err != nil {
+		t.Fatalf("disabled product rejected during create: %v", err)
 	}
-	if _, err := service.Review(ctx, offer.ID); !errors.Is(err, offers.ErrInvalidOffer) {
-		t.Fatalf("disabled review accepted: %v", err)
-	}
-	fields.Status = product.StatusActive
-	if _, err := catalog.Update(ctx, p.ID, fields); err != nil {
-		t.Fatal(err)
+	if _, err := service.UpdateDraft(ctx, offer.ID, command); err != nil {
+		t.Fatalf("disabled product rejected during update: %v", err)
 	}
 	if _, err := service.Review(ctx, offer.ID); err != nil {
-		t.Fatal(err)
-	}
-	fields.Status = product.StatusDisabled
-	if _, err := catalog.Update(ctx, p.ID, fields); err != nil {
-		t.Fatal(err)
-	}
-	if _, err := service.Publish(ctx, offer.ID); !errors.Is(err, offers.ErrInvalidOffer) {
-		t.Fatalf("disabled publish accepted: %v", err)
-	}
-	fields.Status = product.StatusActive
-	if _, err := catalog.Update(ctx, p.ID, fields); err != nil {
-		t.Fatal(err)
+		t.Fatalf("disabled product rejected during review: %v", err)
 	}
 	if _, err := service.Publish(ctx, offer.ID); err != nil {
-		t.Fatal(err)
+		t.Fatalf("disabled product rejected during publish: %v", err)
 	}
-	fields.Status = product.StatusDisabled
-	if _, err := catalog.Update(ctx, p.ID, fields); err != nil {
-		t.Fatal(err)
+	if _, err := service.Verify(ctx, offer.ID); err != nil {
+		t.Fatalf("disabled product rejected during verify: %v", err)
 	}
-	if _, err := service.Verify(ctx, offer.ID); !errors.Is(err, offers.ErrInvalidOffer) {
-		t.Fatalf("disabled verify accepted: %v", err)
-	}
-	// Disabling a referenced product preserves historical offers and still permits taking them down.
+	// Product lifecycle state is independent from offer lifecycle state.
 	if _, err := service.Disable(ctx, offer.ID); err != nil {
 		t.Fatal(err)
 	}
