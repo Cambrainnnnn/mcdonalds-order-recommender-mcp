@@ -1,0 +1,104 @@
+[
+  {
+    "id": "4cafd49b39bc8a6385fda9f3e348f5a7",
+    "version": 0,
+    "status": "draft",
+    "source": "美团/大众点评（iPhone镜像人工采集）",
+    "title": "薯条三重奏",
+    "price": {
+      "amount": 1990,
+      "currency": "CNY"
+    },
+    "orderModes": [
+      "pickup"
+    ],
+    "validTimes": [
+      {
+        "weekdays": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "start": "10:30",
+        "end": "00:00"
+      }
+    ],
+    "components": [
+      {
+        "canonicalProductId": "manual:mcd:fries_medium",
+        "quantity": 3
+      }
+    ],
+    "createdAt": "2026-09-06T03:26:24.20728Z",
+    "updatedAt": "2026-09-06T03:26:24.20728Z"
+  },
+  {
+    "id": "cc3593952b4d4d89dc8c5edd772a8ecb",
+    "version": 0,
+    "status": "draft",
+    "source": "美团/大众点评（iPhone镜像人工采集）",
+    "title": "【24种搭配】1+1堡卷小食自由拼",
+    "price": {
+      "amount": 2490,
+      "currency": "CNY"
+    },
+    "components": [
+      {
+        "canonicalProductId": "manual:mcd:filet_o_fish",
+        "quantity": 1,
+        "choiceGroupId": "main_choose_1_of_4"
+      },
+      {
+        "canonicalProductId": "manual:mcd:grilled_chicken_burger",
+        "quantity": 1,
+        "choiceGroupId": "main_choose_1_of_4"
+      },
+      {
+        "canonicalProductId": "manual:mcd:spicy_chicken_burger",
+        "quantity": 1,
+        "choiceGroupId": "main_choose_1_of_4"
+      },
+      {
+        "canonicalProductId": "manual:mcd:crispy_bamboo_shoot_wrap",
+        "quantity": 1,
+        "choiceGroupId": "main_choose_1_of_4"
+      },
+      {
+        "canonicalProductId": "manual:mcd:spicy_wings_pair",
+        "quantity": 1,
+        "choiceGroupId": "side_choose_1_of_6"
+      },
+      {
+        "canonicalProductId": "manual:mcd:mcchicken",
+        "quantity": 1,
+        "choiceGroupId": "side_choose_1_of_6"
+      },
+      {
+        "canonicalProductId": "manual:mcd:single_cheeseburger",
+        "quantity": 1,
+        "choiceGroupId": "side_choose_1_of_6"
+      },
+      {
+        "canonicalProductId": "manual:mcd:crispy_juicy_chicken_bone_in_loin",
+        "quantity": 1,
+        "choiceGroupId": "side_choose_1_of_6"
+      },
+      {
+        "canonicalProductId": "manual:mcd:fries_medium",
+        "quantity": 1,
+        "choiceGroupId": "side_choose_1_of_6"
+      },
+      {
+        "canonicalProductId": "manual:mcd:mcnuggets_5",
+        "quantity": 1,
+        "choiceGroupId": "side_choose_1_of_6"
+      }
+    ],
+    "createdAt": "2026-09-06T03:26:24.212116Z",
+    "updatedAt": "2026-09-06T03:26:24.212116Z"
+  }
+]

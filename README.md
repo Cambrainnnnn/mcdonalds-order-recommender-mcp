@@ -157,6 +157,35 @@ HTTP 入站适配层，将 HTTP 请求转换为应用用例参数，并将应用
 
 要求 Go 1.22 或更高版本。
 
+### Docker Compose（推荐用于测试）
+
+同时启动应用和 PostgreSQL：
+
+```bash
+docker compose up --build
+```
+
+应用默认访问地址为 `http://localhost:8080`，PostgreSQL 默认暴露在 `localhost:5432`。应用会在数据库就绪后启动并自动执行 migration。
+
+后台启动、查看日志和停止：
+
+```bash
+docker compose up --build -d
+docker compose logs -f app
+docker compose down
+```
+
+`docker compose down` 会保留 PostgreSQL 数据卷。如需同时删除测试数据，使用 `docker compose down -v`。
+
+如需启用麦当劳 MCP 官方菜单和算价，可在启动前设置 Token：
+
+```bash
+export APP_MCD_MCP_TOKEN='your-token'
+docker compose up --build
+```
+
+### 本地运行
+
 ```bash
 make check
 make run
@@ -222,9 +251,88 @@ curl -X POST http://localhost:8080/v1/recommendation-sessions/{sessionId}/recomm
 
 配置 `APP_DATABASE_URL` 后，程序启动时自动创建套餐表和不可变版本约束。未配置数据库时，运营 API 和推荐链路使用进程内套餐库；进程重启后数据会丢失。
 
+### 标准单品库与运营 API
+
+单品表示一个品牌下、一个明确规格的餐品。例如“薯条 / 中份”和“薯条 / 大份”是两个单品。`id` 是稳定的内部标识，也是套餐组成中的 `canonicalProductId`；不等同于官方渠道商品代码。
+
+| 字段 | 含义 |
+| --- | --- |
+| `id` | 默认生成 `prod_` 前缀的 ID，创建后不可修改；创建时可指定旧 ID 以补录历史单品 |
+| `brand` | 必填，品牌代码，例如 `mcd`；去除首尾空格并转小写，最多 64 字符 |
+| `name` | 必填，标准名称，例如“薯条”，最多 200 字符 |
+| `specification` | 必填，规格，例如“中份”“大份”“5块”“标准份”，最多 100 字符 |
+| `category` | 可选，分类，例如“小食”“汉堡”“饮料”，最多 100 字符 |
+| `aliases` | 可选，搜索别名数组，例如 `["中薯", "中份薯条"]`；最多 50 项，每项最多 200 字符，自动去重 |
+| `description` | 可选，运营备注，最多 2000 字符 |
+| `price` | 可选参考单价，使用最小货币单位，例如 `{"amount":999900,"currency":"CNY"}` 表示 9999 元 |
+| `salesScopes` | 销售范围数组：`standalone` 表示可单卖，`offer_component` 表示可作为套餐组件；创建时省略则默认两者都有 |
+| `status` | 生命周期状态：`active` 或 `disabled`；创建默认 `active`。`disabled` 表示完全不可用，不表示“仅不可单卖” |
+| `createdAt` / `updatedAt` | 服务端生成的 UTC 时间 |
+
+同一品牌、名称、规格的组合不可重复（忽略大小写）；不同规格可以分别录入。单品的 `price` 是参考单价，不表示特定渠道的实时价格；渠道价、门店库存或优惠有效期不属于单品主数据。仅作为套餐组成出售的活动单品使用 `salesScopes:["offer_component"]`。当前实现单品主数据与套餐关联，官方商品代码映射和 MCP 自动对齐仍需后续实现。别名当前用于单品查询，不会自动解析推荐请求中的自然语言。
+
+```text
+POST /v1/admin/products              新增单品
+PUT  /v1/admin/products/{productId}  修改单品（完整替换可编辑字段）
+GET  /v1/admin/products/{productId}  查询单品详情
+GET  /v1/admin/products              全量运营列表，包含启用和停用单品
+GET  /v1/products                    套餐选择用的全量列表，仅返回启用单品
+```
+
+列表直接返回 JSON 数组，无分页、无默认条数上限，空结果为 `[]`；按品牌、名称、规格、ID 升序排列。这里“全量”指本系统已录入的数据，不会自动抓取麦当劳全部菜单。两个列表均支持 `brand`、`category` 精确筛选，以及 `q` 对 ID、名称、规格、别名的子串搜索，忽略大小写。运营列表额外支持 `status=active|disabled`；`/v1/products` 只允许省略状态或指定 `active`。不支持的查询参数（例如 `limit`、`page`）及重复参数返回 400。
+
+新增单品：
+
+```bash
+curl -X POST http://localhost:8080/v1/admin/products \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "brand":"mcd",
+    "name":"薯条",
+    "specification":"中份",
+    "category":"小食",
+    "aliases":["中薯","中份薯条"],
+    "price":{"amount":1500,"currency":"CNY"},
+    "salesScopes":["standalone","offer_component"]
+  }'
+```
+
+返回 201、单品对象及 `Location` 详情地址。后续将返回的 `id` 原样填入套餐的 `components[].canonicalProductId`：
+
+```json
+{
+  "canonicalProductId": "prod_替换为新增单品返回的ID",
+  "quantity": 1
+}
+```
+
+查询麦当劳全部可选单品及按别名搜索：
+
+```bash
+curl 'http://localhost:8080/v1/products?brand=mcd'
+curl --get 'http://localhost:8080/v1/admin/products' \
+  --data-urlencode 'brand=mcd' --data-urlencode 'q=中薯'
+```
+
+修改接口要求提供 `brand`、`name`、`specification`；省略 `category`、`aliases`、`description`、`price` 会清空这些字段，省略 `salesScopes` 或 `status` 则保留原值。传入 `status=disabled` 会完全停用，传入 `active` 恢复。没有物理删除接口，以保留套餐引用。
+
+套餐创建、草稿修改、CSV 导入、复核、发布及再核验会校验组成单品存在、处于启用状态且包含 `offer_component` 销售范围，失败返回 `invalid_offer`（CSV 导入按行报告）。停用单品不会自动下架已经发布的套餐，需要单独调用套餐下架接口。
+
+历史 `manual:mcd:*` 套餐保持可查询；在修改、复核或发布前，可通过新增接口指定相同 `id` 并补齐餐品信息，例如 `"id":"manual:mcd:fries_medium"`。自定义 ID 限 1–128 个字母、数字、冒号、下划线或连字符，以字母或数字开头，统一为小写；普通新增建议省略 `id`。补录前需确认名称与规格，服务不会根据旧 ID 自动猜测餐品资料。
+
+单品接口错误：参数不合法 400（`invalid_product`）、未找到 404（`product_not_found`）、ID 或名称规格重复 409（`product_conflict`）。配置数据库时使用 PostgreSQL 并自动创建 `products` 表；否则使用内存存储，重启丢失。
+
+运行测试（PostgreSQL 测试在临时 schema 中运行并自动清理）：
+
+```bash
+go test -race ./...
+APP_TEST_DATABASE_URL='postgres://meal:meal_dev_password@localhost:5432/meal_recommendation?sslmode=disable' go test ./internal/application/products -v
+```
+
 ### 运营套餐 API
 
 ```text
+GET  /v1/admin/offers
 POST /v1/admin/offers
 PUT  /v1/admin/offers/{offerId}/draft
 POST /v1/admin/offers/imports
@@ -232,6 +340,12 @@ POST /v1/admin/offers/{offerId}/review
 POST /v1/admin/offers/{offerId}/publish
 POST /v1/admin/offers/{offerId}/verify
 POST /v1/admin/offers/{offerId}/disable
+```
+
+查询全部套餐（按最近更新时间倒序）：
+
+```bash
+curl http://localhost:8080/v1/admin/offers
 ```
 
 CSV 导入使用 `Content-Type: text/csv`，列为：

@@ -18,7 +18,7 @@ func TestOfferLifecyclePublishesImmutableVersions(t *testing.T) {
 	now := time.Date(2026, time.September, 5, 8, 0, 0, 0, time.UTC)
 	repository := memory.NewOfferRepository(func() time.Time { return now }, 24*time.Hour)
 	service := appoffers.NewService(repository, fixedID("offer-1"), func() time.Time { return now })
-	offer, err := service.Create(context.Background(), appoffers.CreateCommand{Source: "douyin", Title: "巨无霸套餐", Price: domain.Money{Amount: 2990, Currency: "CNY"}, OrderModes: []domain.OrderMode{domain.OrderModePickup}, Components: []appoffers.Component{{CanonicalProductID: "BIG_MAC", Quantity: 1}}})
+	offer, err := service.Create(context.Background(), appoffers.CreateCommand{Source: "douyin", Title: "巨无霸套餐", Price: domain.Money{Amount: 2990, Currency: "CNY"}, OrderModes: []domain.OrderMode{domain.OrderModePickup}, Components: []appoffers.Component{{CanonicalProductID: "221458923456789012", Quantity: 1}}})
 	if err != nil {
 		t.Fatalf("Create() error = %v", err)
 	}
@@ -56,10 +56,30 @@ func TestOfferLifecyclePublishesImmutableVersions(t *testing.T) {
 	}
 }
 
+func TestListOffersOrdersByMostRecentlyUpdated(t *testing.T) {
+	repository := memory.NewOfferRepository(time.Now, 24*time.Hour)
+	older := &appoffers.Offer{ID: "offer-b", UpdatedAt: time.Date(2026, time.September, 5, 8, 0, 0, 0, time.UTC)}
+	newer := &appoffers.Offer{ID: "offer-a", UpdatedAt: older.UpdatedAt.Add(time.Hour)}
+	if err := repository.Create(context.Background(), older); err != nil {
+		t.Fatal(err)
+	}
+	if err := repository.Create(context.Background(), newer); err != nil {
+		t.Fatal(err)
+	}
+	service := appoffers.NewService(repository, fixedID("unused"), time.Now)
+	offers, err := service.List(context.Background())
+	if err != nil {
+		t.Fatalf("List() error = %v", err)
+	}
+	if len(offers) != 2 || offers[0].ID != "offer-a" || offers[1].ID != "offer-b" {
+		t.Fatalf("offers=%#v", offers)
+	}
+}
+
 func TestOfferRejectsInvalidTransition(t *testing.T) {
 	repository := memory.NewOfferRepository(time.Now, 24*time.Hour)
 	service := appoffers.NewService(repository, fixedID("offer-1"), time.Now)
-	offer, err := service.Create(context.Background(), appoffers.CreateCommand{Source: "meituan", Title: "套餐", Price: domain.Money{Amount: 1000, Currency: "CNY"}, Components: []appoffers.Component{{CanonicalProductID: "BURGER", Quantity: 1}}})
+	offer, err := service.Create(context.Background(), appoffers.CreateCommand{Source: "meituan", Title: "套餐", Price: domain.Money{Amount: 1000, Currency: "CNY"}, Components: []appoffers.Component{{CanonicalProductID: "221458923456789012", Quantity: 1}}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -78,7 +98,7 @@ func TestOfferCatalogUsesReservationTimeAndDailyWindow(t *testing.T) {
 		Source: "douyin", Title: "午餐套餐", Price: domain.Money{Amount: 1990, Currency: "CNY"},
 		ValidFrom: &validFrom, ValidUntil: &validUntil,
 		ValidTimes: []appoffers.ValidTimeRule{{Weekdays: []int{int(time.Monday)}, Start: "10:30", End: "14:00"}},
-		Components: []appoffers.Component{{CanonicalProductID: "BURGER", Quantity: 1}},
+		Components: []appoffers.Component{{CanonicalProductID: "221458923456789012", Quantity: 1}},
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -108,7 +128,7 @@ func TestOfferRejectsInvalidDailyWindow(t *testing.T) {
 	_, err := service.Create(context.Background(), appoffers.CreateCommand{
 		Source: "meituan", Title: "套餐", Price: domain.Money{Amount: 1000, Currency: "CNY"},
 		ValidTimes: []appoffers.ValidTimeRule{{Start: "10:00", End: "10:00"}},
-		Components: []appoffers.Component{{CanonicalProductID: "BURGER", Quantity: 1}},
+		Components: []appoffers.Component{{CanonicalProductID: "221458923456789012", Quantity: 1}},
 	})
 	if err == nil {
 		t.Fatal("Create() should reject an empty daily window")

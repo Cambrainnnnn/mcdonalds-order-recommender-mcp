@@ -66,6 +66,31 @@ func (r *OfferRepository) Get(ctx context.Context, id string) (*appoffers.Offer,
 	return &offer, nil
 }
 
+func (r *OfferRepository) List(ctx context.Context) ([]*appoffers.Offer, error) {
+	rows, err := r.db.QueryContext(ctx, `SELECT draft FROM offers`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	offers := make([]*appoffers.Offer, 0)
+	for rows.Next() {
+		var payload []byte
+		if err := rows.Scan(&payload); err != nil {
+			return nil, err
+		}
+		var offer appoffers.Offer
+		if err := json.Unmarshal(payload, &offer); err != nil {
+			return nil, fmt.Errorf("decode offer: %w", err)
+		}
+		offers = append(offers, &offer)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return offers, nil
+}
+
 func (r *OfferRepository) Save(ctx context.Context, offer *appoffers.Offer) error {
 	payload, err := json.Marshal(offer)
 	if err != nil {
@@ -107,7 +132,7 @@ func (r *OfferRepository) Publish(ctx context.Context, offer *appoffers.Offer) e
 		return fmt.Errorf("marshal valid time rules: %w", err)
 	}
 	_, err = tx.ExecContext(ctx, `INSERT INTO offer_versions (id,offer_id,version,snapshot,published_at,valid_from,valid_until,valid_time_rules,verified_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
-		versionID(offer), offer.ID, offer.Version, payload, offer.UpdatedAt, offer.ValidFrom, offer.ValidUntil, validTimes, offer.VerifiedAt)
+		offer.VersionID, offer.ID, offer.Version, payload, offer.UpdatedAt, offer.ValidFrom, offer.ValidUntil, validTimes, offer.VerifiedAt)
 	if err != nil {
 		return err
 	}
@@ -128,7 +153,7 @@ func (r *OfferRepository) ListEligible(ctx context.Context, requirement domain.R
 	if cached, ok := r.cached(key, now, false); ok {
 		return cached, nil
 	}
-	rows, err := r.db.QueryContext(ctx, `SELECT v.snapshot FROM offers o JOIN offer_versions v ON v.offer_id=o.id AND v.version=o.version WHERE o.status='published' AND (v.valid_from IS NULL OR v.valid_from <= $1) AND (v.valid_until IS NULL OR v.valid_until > $1)`, effectiveAt)
+	rows, err := r.db.QueryContext(ctx, `SELECT v.id, v.snapshot FROM offers o JOIN offer_versions v ON v.offer_id=o.id AND v.version=o.version WHERE o.status='published' AND (v.valid_from IS NULL OR v.valid_from <= $1) AND (v.valid_until IS NULL OR v.valid_until > $1)`, effectiveAt)
 	if err != nil {
 		if cached, ok := r.cached(key, now, true); ok {
 			return markOffersStale(cached), nil
@@ -140,13 +165,15 @@ func (r *OfferRepository) ListEligible(ctx context.Context, requirement domain.R
 	hardExpiresAt := time.Time{}
 	for rows.Next() {
 		var payload []byte
-		if err := rows.Scan(&payload); err != nil {
+		var versionID string
+		if err := rows.Scan(&versionID, &payload); err != nil {
 			return nil, err
 		}
 		var offer appoffers.Offer
 		if err := json.Unmarshal(payload, &offer); err != nil {
 			return nil, fmt.Errorf("decode offer version: %w", err)
 		}
+		offer.VersionID = versionID
 		if offerMatches(&offer, requirement, effectiveAt) {
 			result = append(result, toRecommendationOffer(&offer, r.staleAfter, now))
 			if requirement.TargetTime == nil && offer.ValidUntil != nil && (hardExpiresAt.IsZero() || offer.ValidUntil.Before(hardExpiresAt)) {
@@ -211,10 +238,9 @@ func toRecommendationOffer(offer *appoffers.Offer, staleAfter time.Duration, now
 			warnings = append(warnings, "人工套餐价格已超过复核时限")
 		}
 	}
-	return apprec.OfferVersion{ID: versionID(offer), Source: offer.Source, Title: offer.Title, Price: domain.PriceQuote{Amount: offer.Price, Confidence: confidence, QuotedAt: quotedAt, Source: offer.Source}, Components: components, Eligibility: domain.EligibilityEligible, PurchaseURL: offer.PurchaseURL, Warnings: warnings}
+	return apprec.OfferVersion{ID: offer.VersionID, Source: offer.Source, Title: offer.Title, Price: domain.PriceQuote{Amount: offer.Price, Confidence: confidence, QuotedAt: quotedAt, Source: offer.Source}, Components: components, Eligibility: domain.EligibilityEligible, PurchaseURL: offer.PurchaseURL, Warnings: warnings}
 }
 
-func versionID(offer *appoffers.Offer) string { return fmt.Sprintf("%s-v%d", offer.ID, offer.Version) }
 func offerCacheKey(r domain.Requirement) string {
 	target := "now"
 	if r.TargetTime != nil {

@@ -28,11 +28,13 @@ type SessionUseCase interface {
 type Handler struct {
 	sessions SessionUseCase
 	offers   OfferAdminUseCase
+	products ProductAdminUseCase
 	logger   *slog.Logger
 }
 
 type OfferAdminUseCase interface {
 	Create(context.Context, appoffers.CreateCommand) (*appoffers.Offer, error)
+	List(context.Context) ([]*appoffers.Offer, error)
 	UpdateDraft(context.Context, string, appoffers.UpdateCommand) (*appoffers.Offer, error)
 	Import(context.Context, []appoffers.CreateCommand) appoffers.ImportResult
 	Review(context.Context, string) (*appoffers.Offer, error)
@@ -71,6 +73,9 @@ func (h *Handler) Routes() http.Handler {
 	mux.HandleFunc("POST /v1/recommendation-sessions/{sessionId}/recommendations", h.generateRecommendations)
 	if h.offers != nil {
 		h.registerOfferAdminRoutes(mux)
+	}
+	if h.products != nil {
+		h.registerProductRoutes(mux)
 	}
 	mux.HandleFunc("/healthz", h.methodNotAllowed("GET, HEAD"))
 	mux.HandleFunc("/readyz", h.methodNotAllowed("GET, HEAD"))

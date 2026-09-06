@@ -3,7 +3,6 @@ package memory
 import (
 	"context"
 	"slices"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -43,6 +42,16 @@ func (r *OfferRepository) Get(_ context.Context, id string) (*appoffers.Offer, e
 		return nil, appoffers.ErrOfferNotFound
 	}
 	return cloneOffer(offer), nil
+}
+
+func (r *OfferRepository) List(_ context.Context) ([]*appoffers.Offer, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	offers := make([]*appoffers.Offer, 0, len(r.offers))
+	for _, offer := range r.offers {
+		offers = append(offers, cloneOffer(offer))
+	}
+	return offers, nil
 }
 
 func (r *OfferRepository) Save(_ context.Context, offer *appoffers.Offer) error {
@@ -129,7 +138,7 @@ func recommendationOffer(offer *appoffers.Offer, staleAfter time.Duration, now t
 		}
 	}
 	return apprec.OfferVersion{
-		ID: offer.ID + "-v" + strconv.Itoa(offer.Version), Source: offer.Source, Title: offer.Title,
+		ID: offer.VersionID, Source: offer.Source, Title: offer.Title,
 		Price:      domain.PriceQuote{Amount: offer.Price, Confidence: confidence, QuotedAt: quotedAt, Source: offer.Source},
 		Components: components, Eligibility: domain.EligibilityEligible, PurchaseURL: offer.PurchaseURL, Warnings: warnings,
 	}

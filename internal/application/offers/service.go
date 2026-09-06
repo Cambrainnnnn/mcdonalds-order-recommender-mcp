@@ -8,6 +8,9 @@ import (
 	"strings"
 	"time"
 
+	appProducts "meal-recommendation/internal/application/products"
+	"meal-recommendation/internal/domain/identity"
+	product "meal-recommendation/internal/domain/product"
 	domain "meal-recommendation/internal/domain/recommendation"
 )
 
@@ -44,6 +47,7 @@ type ValidTimeRule struct {
 
 type Offer struct {
 	ID          string             `json:"id"`
+	VersionID   string             `json:"versionId,omitempty"`
 	Version     int                `json:"version"`
 	Status      Status             `json:"status"`
 	Source      string             `json:"source"`
@@ -91,6 +95,7 @@ type ImportError struct {
 type Repository interface {
 	Create(ctx context.Context, offer *Offer) error
 	Get(ctx context.Context, id string) (*Offer, error)
+	List(ctx context.Context) ([]*Offer, error)
 	Save(ctx context.Context, offer *Offer) error
 	Publish(ctx context.Context, offer *Offer) error
 }
@@ -102,13 +107,31 @@ type Service struct {
 	repository Repository
 	ids        IDGenerator
 	now        Clock
+	products   ProductCatalog
 }
 
-func NewService(repository Repository, ids IDGenerator, now Clock) *Service {
+type ProductCatalog interface {
+	Get(context.Context, string) (*product.Product, error)
+}
+
+type Option func(*Service)
+
+func WithProductCatalog(catalog ProductCatalog) Option {
+	if catalog == nil {
+		panic("offers: product catalog is required")
+	}
+	return func(s *Service) { s.products = catalog }
+}
+
+func NewService(repository Repository, ids IDGenerator, now Clock, options ...Option) *Service {
 	if repository == nil || ids == nil || now == nil {
 		panic("offers: repository, ID generator and clock are required")
 	}
-	return &Service{repository: repository, ids: ids, now: now}
+	service := &Service{repository: repository, ids: ids, now: now}
+	for _, option := range options {
+		option(service)
+	}
+	return service
 }
 
 func (s *Service) Create(ctx context.Context, command CreateCommand) (*Offer, error) {
@@ -121,10 +144,27 @@ func (s *Service) Create(ctx context.Context, command CreateCommand) (*Offer, er
 	if err := validateOffer(offer); err != nil {
 		return nil, err
 	}
+	if err := s.validateProducts(ctx, offer); err != nil {
+		return nil, err
+	}
 	if err := s.repository.Create(ctx, offer); err != nil {
 		return nil, fmt.Errorf("create offer: %w", err)
 	}
 	return offer, nil
+}
+
+func (s *Service) List(ctx context.Context) ([]*Offer, error) {
+	offers, err := s.repository.List(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("list offers: %w", err)
+	}
+	slices.SortFunc(offers, func(a, b *Offer) int {
+		if order := b.UpdatedAt.Compare(a.UpdatedAt); order != 0 {
+			return order
+		}
+		return strings.Compare(a.ID, b.ID)
+	})
+	return offers, nil
 }
 
 func (s *Service) UpdateDraft(ctx context.Context, id string, command UpdateCommand) (*Offer, error) {
@@ -138,6 +178,9 @@ func (s *Service) UpdateDraft(ctx context.Context, id string, command UpdateComm
 	updated := commandOffer(id, command, offer.CreatedAt)
 	updated.UpdatedAt = s.now().UTC()
 	if err := validateOffer(updated); err != nil {
+		return nil, err
+	}
+	if err := s.validateProducts(ctx, updated); err != nil {
 		return nil, err
 	}
 	if err := s.repository.Save(ctx, updated); err != nil {
@@ -175,10 +218,17 @@ func (s *Service) Verify(ctx context.Context, id string) (*Offer, error) {
 	if offer.Status != StatusPublished {
 		return nil, fmt.Errorf("%w: only published offers can be verified", ErrInvalidTransition)
 	}
+	if err := s.validateProducts(ctx, offer); err != nil {
+		return nil, err
+	}
 	now := s.now().UTC()
 	offer.VerifiedAt = &now
 	offer.UpdatedAt = now
 	offer.Version++
+	offer.VersionID, err = s.ids.NewID()
+	if err != nil {
+		return nil, fmt.Errorf("generate offer version id: %w", err)
+	}
 	if err := s.repository.Publish(ctx, offer); err != nil {
 		return nil, fmt.Errorf("verify offer: %w", err)
 	}
@@ -209,11 +259,18 @@ func (s *Service) transition(ctx context.Context, id string, from, to Status, pu
 	if offer.Status != from {
 		return nil, fmt.Errorf("%w: expected %s, got %s", ErrInvalidTransition, from, offer.Status)
 	}
+	if err := s.validateProducts(ctx, offer); err != nil {
+		return nil, err
+	}
 	now := s.now().UTC()
 	offer.Status = to
 	offer.UpdatedAt = now
 	if publish {
 		offer.Version++
+		offer.VersionID, err = s.ids.NewID()
+		if err != nil {
+			return nil, fmt.Errorf("generate offer version id: %w", err)
+		}
 		if offer.VerifiedAt == nil {
 			offer.VerifiedAt = &now
 		}
@@ -232,8 +289,32 @@ func commandOffer(id string, command CreateCommand, createdAt time.Time) *Offer 
 		ID: id, Status: StatusDraft, Source: strings.TrimSpace(command.Source), Title: strings.TrimSpace(command.Title),
 		Price: command.Price, PurchaseURL: strings.TrimSpace(command.PurchaseURL), City: strings.TrimSpace(command.City),
 		StoreCodes: command.StoreCodes, OrderModes: command.OrderModes, ValidFrom: command.ValidFrom,
-		ValidUntil: command.ValidUntil, ValidTimes: command.ValidTimes, Components: command.Components, CreatedAt: createdAt, UpdatedAt: createdAt,
+		ValidUntil: command.ValidUntil, ValidTimes: command.ValidTimes, Components: slices.Clone(command.Components), CreatedAt: createdAt, UpdatedAt: createdAt,
 	}
+}
+
+func (s *Service) validateProducts(ctx context.Context, offer *Offer) error {
+	if s.products == nil {
+		return nil
+	}
+	for index := range offer.Components {
+		component := &offer.Components[index]
+		p, err := s.products.Get(ctx, component.CanonicalProductID)
+		if errors.Is(err, appProducts.ErrNotFound) {
+			return fmt.Errorf("%w: component %d product %q does not exist; register it in the product catalog first", ErrInvalidOffer, index+1, component.CanonicalProductID)
+		}
+		if err != nil {
+			return fmt.Errorf("look up component product: %w", err)
+		}
+		if p.Status != product.StatusActive {
+			return fmt.Errorf("%w: component %d product %q is disabled", ErrInvalidOffer, index+1, p.ID)
+		}
+		if !p.Supports(product.SalesScopeOfferComponent) {
+			return fmt.Errorf("%w: component %d product %q is not available as an offer component", ErrInvalidOffer, index+1, p.ID)
+		}
+		component.CanonicalProductID = p.ID
+	}
+	return nil
 }
 
 func validateOffer(offer *Offer) error {
@@ -250,8 +331,11 @@ func validateOffer(offer *Offer) error {
 	for index := range offer.Components {
 		offer.Components[index].CanonicalProductID = strings.TrimSpace(offer.Components[index].CanonicalProductID)
 		component := offer.Components[index]
-		if strings.TrimSpace(component.CanonicalProductID) == "" || component.Quantity <= 0 {
-			return fmt.Errorf("%w: component product ID and positive quantity are required", ErrInvalidOffer)
+		if component.ChoiceGroupID != "" && !identity.Valid(component.ChoiceGroupID) {
+			return fmt.Errorf("%w: choiceGroupId must be a snowflake string", ErrInvalidOffer)
+		}
+		if !identity.Valid(component.CanonicalProductID) || component.Quantity <= 0 {
+			return fmt.Errorf("%w: component product ID must be a snowflake string and quantity must be positive", ErrInvalidOffer)
 		}
 	}
 	for _, mode := range offer.OrderModes {

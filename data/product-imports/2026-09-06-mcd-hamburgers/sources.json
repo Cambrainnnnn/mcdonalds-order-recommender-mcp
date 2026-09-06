@@ -1,0 +1,129 @@
+{
+  "listUrl": "https://www.mcdonalds.com.cn/product/mcdonalds/hamburgers",
+  "items": [
+    {
+      "name": "巨无霸",
+      "sourceUrl": "https://www.mcdonalds.com.cn/product/Big-Mac",
+      "sourceSpecification": [
+        "1个"
+      ],
+      "specification": "1个",
+      "legacyProductId": null
+    },
+    {
+      "name": "汉堡包",
+      "sourceUrl": "https://www.mcdonalds.com.cn/product/Hamburger",
+      "sourceSpecification": [
+        "1个"
+      ],
+      "specification": "1个",
+      "legacyProductId": null
+    },
+    {
+      "name": "麦辣鸡腿汉堡",
+      "sourceUrl": "https://www.mcdonalds.com.cn/product/Spicy-Chicken-Filet",
+      "sourceSpecification": [
+        "1个"
+      ],
+      "specification": "1个",
+      "legacyProductId": "manual:mcd:spicy_chicken_burger"
+    },
+    {
+      "name": "板烧鸡腿堡",
+      "sourceUrl": "https://www.mcdonalds.com.cn/product/Grilled-Chicken-Sandwich",
+      "sourceSpecification": [
+        "1个"
+      ],
+      "specification": "1个",
+      "legacyProductId": "manual:mcd:grilled_chicken_burger"
+    },
+    {
+      "name": "麦香鸡",
+      "sourceUrl": "https://www.mcdonalds.com.cn/product/McChicken",
+      "sourceSpecification": [
+        "1个"
+      ],
+      "specification": "1个",
+      "legacyProductId": "manual:mcd:mcchicken"
+    },
+    {
+      "name": "麦香鱼",
+      "sourceUrl": "https://www.mcdonalds.com.cn/product/Filet-O-Fish",
+      "sourceSpecification": [
+        "1个"
+      ],
+      "specification": "1个",
+      "legacyProductId": "manual:mcd:filet_o_fish"
+    },
+    {
+      "name": "吉士汉堡包",
+      "sourceUrl": "https://www.mcdonalds.com.cn/product/Cheeseburger",
+      "sourceSpecification": [
+        "1个"
+      ],
+      "specification": "1个",
+      "legacyProductId": "manual:mcd:single_cheeseburger"
+    },
+    {
+      "name": "双层吉士汉堡",
+      "sourceUrl": "https://www.mcdonalds.com.cn/product/Double-Cheeseburger",
+      "sourceSpecification": [
+        "1个"
+      ],
+      "specification": "1个",
+      "legacyProductId": null
+    },
+    {
+      "name": "不素之霸双层牛堡",
+      "sourceUrl": "https://www.mcdonalds.com.cn/product/beef-sausage",
+      "sourceSpecification": [
+        "1个"
+      ],
+      "specification": "1个",
+      "legacyProductId": null
+    },
+    {
+      "name": "双层深海鳕鱼堡",
+      "sourceUrl": "https://www.mcdonalds.com.cn/product/double-fof",
+      "sourceSpecification": [
+        "1个"
+      ],
+      "specification": "1个",
+      "legacyProductId": null
+    },
+    {
+      "name": "培根安格斯厚牛堡",
+      "sourceUrl": "https://www.mcdonalds.com.cn/product/Thick-Angus-Beef-Burger-with-Bacon",
+      "sourceSpecification": [
+        "1个"
+      ],
+      "specification": "1个",
+      "legacyProductId": null
+    },
+    {
+      "name": "芝士安格斯厚牛堡",
+      "sourceUrl": "https://www.mcdonalds.com.cn/product/Cheese-Angus",
+      "sourceSpecification": [
+        "1个"
+      ],
+      "specification": "1个",
+      "legacyProductId": null
+    },
+    {
+      "name": "培根蔬萃双层牛堡",
+      "sourceUrl": "https://www.mcdonalds.com.cn/product/Bacon-Lettuce-Tomato-Double-Beef-Burger",
+      "sourceSpecification": [
+        "1个"
+      ],
+      "specification": "1个",
+      "legacyProductId": null
+    },
+    {
+      "name": "酥酥多笋卷",
+      "sourceUrl": "https://www.mcdonalds.com.cn/product/%E9%85%A5%E9%85%A5%E5%A4%9A%E7%AC%8B%E5%8D%B7",
+      "sourceSpecification": [],
+      "specification": "标准份",
+      "legacyProductId": "manual:mcd:crispy_bamboo_shoot_wrap"
+    }
+  ]
+}

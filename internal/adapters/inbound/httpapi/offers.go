@@ -36,6 +36,8 @@ func (r offerRequest) command() appoffers.CreateCommand {
 }
 
 func (h *Handler) registerOfferAdminRoutes(mux *http.ServeMux) {
+	mux.HandleFunc("GET /v1/admin/offers", h.listOffers)
+	// 创建套餐接口
 	mux.HandleFunc("POST /v1/admin/offers", h.createOffer)
 	mux.HandleFunc("PUT /v1/admin/offers/{offerId}/draft", h.updateOfferDraft)
 	mux.HandleFunc("POST /v1/admin/offers/imports", h.importOffers)
@@ -43,12 +45,21 @@ func (h *Handler) registerOfferAdminRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /v1/admin/offers/{offerId}/publish", h.offerAction(h.offers.Publish))
 	mux.HandleFunc("POST /v1/admin/offers/{offerId}/verify", h.offerAction(h.offers.Verify))
 	mux.HandleFunc("POST /v1/admin/offers/{offerId}/disable", h.offerAction(h.offers.Disable))
-	mux.HandleFunc("/v1/admin/offers", h.methodNotAllowed("POST"))
+	mux.HandleFunc("/v1/admin/offers", h.methodNotAllowed("GET, POST"))
 	mux.HandleFunc("/v1/admin/offers/imports", h.methodNotAllowed("POST"))
 	mux.HandleFunc("/v1/admin/offers/{offerId}/draft", h.methodNotAllowed("PUT"))
 	for _, action := range []string{"review", "publish", "verify", "disable"} {
 		mux.HandleFunc("/v1/admin/offers/{offerId}/"+action, h.methodNotAllowed("POST"))
 	}
+}
+
+func (h *Handler) listOffers(w http.ResponseWriter, r *http.Request) {
+	offers, err := h.offers.List(r.Context())
+	if err != nil {
+		h.writeOfferError(w, "list offers", err)
+		return
+	}
+	writeJSON(w, http.StatusOK, offers)
 }
 
 func (h *Handler) createOffer(w http.ResponseWriter, r *http.Request) {

@@ -1,0 +1,39 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: meal
+      POSTGRES_PASSWORD: meal_dev_password
+      POSTGRES_DB: meal_recommendation
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U meal -d meal_recommendation"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+    environment:
+      APP_HTTP_ADDRESS: ":8080"
+      APP_DATABASE_URL: "postgres://meal:meal_dev_password@postgres:5432/meal_recommendation?sslmode=disable"
+      APP_MCD_MCP_ENDPOINT: "${APP_MCD_MCP_ENDPOINT:-https://mcp.mcd.cn}"
+      APP_MCD_MCP_TOKEN: "${APP_MCD_MCP_TOKEN:-}"
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+volumes:
+  postgres-data:

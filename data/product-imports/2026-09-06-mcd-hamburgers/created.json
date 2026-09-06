@@ -1,0 +1,174 @@
+[
+  {
+    "id": "prod_c3581f39ec2a466b519a9f444f83fc18",
+    "brand": "mcd",
+    "name": "巨无霸",
+    "specification": "1个",
+    "category": "汉堡",
+    "aliases": [],
+    "description": "双牛肉饼汉堡，配芝士、生菜、洋葱、酸黄瓜及酱汁。 来源：https://www.mcdonalds.com.cn/product/Big-Mac；采集日期：2026-09-06。",
+    "status": "active",
+    "createdAt": "2026-09-06T04:13:52.305880335Z",
+    "updatedAt": "2026-09-06T04:13:52.305880335Z"
+  },
+  {
+    "id": "prod_3e19c6039d9279cb33761599e8b4c82b",
+    "brand": "mcd",
+    "name": "汉堡包",
+    "specification": "1个",
+    "category": "汉堡",
+    "aliases": [],
+    "description": "牛肉饼汉堡，配酸黄瓜、洋葱及番茄酱。 来源：https://www.mcdonalds.com.cn/product/Hamburger；采集日期：2026-09-06。",
+    "status": "active",
+    "createdAt": "2026-09-06T04:13:52.312327002Z",
+    "updatedAt": "2026-09-06T04:13:52.312327002Z"
+  },
+  {
+    "id": "manual:mcd:spicy_chicken_burger",
+    "brand": "mcd",
+    "name": "麦辣鸡腿汉堡",
+    "specification": "1个",
+    "category": "汉堡",
+    "aliases": [
+      "麦辣鸡腿堡"
+    ],
+    "description": "辣味脆皮鸡腿肉汉堡，配生菜及沙拉酱。 来源：https://www.mcdonalds.com.cn/product/Spicy-Chicken-Filet；采集日期：2026-09-06。",
+    "status": "active",
+    "createdAt": "2026-09-06T04:13:52.31773246Z",
+    "updatedAt": "2026-09-06T04:13:52.31773246Z"
+  },
+  {
+    "id": "manual:mcd:grilled_chicken_burger",
+    "brand": "mcd",
+    "name": "板烧鸡腿堡",
+    "specification": "1个",
+    "category": "汉堡",
+    "aliases": [],
+    "description": "去骨鸡排汉堡，配生菜及烤味酱。 来源：https://www.mcdonalds.com.cn/product/Grilled-Chicken-Sandwich；采集日期：2026-09-06。",
+    "status": "active",
+    "createdAt": "2026-09-06T04:13:52.321896294Z",
+    "updatedAt": "2026-09-06T04:13:52.321896294Z"
+  },
+  {
+    "id": "manual:mcd:mcchicken",
+    "brand": "mcd",
+    "name": "麦香鸡",
+    "specification": "1个",
+    "category": "汉堡",
+    "aliases": [],
+    "description": "脆皮鸡肉汉堡，配生菜。 来源：https://www.mcdonalds.com.cn/product/McChicken；采集日期：2026-09-06。",
+    "status": "active",
+    "createdAt": "2026-09-06T04:13:52.326469752Z",
+    "updatedAt": "2026-09-06T04:13:52.326469752Z"
+  },
+  {
+    "id": "manual:mcd:filet_o_fish",
+    "brand": "mcd",
+    "name": "麦香鱼",
+    "specification": "1个",
+    "category": "汉堡",
+    "aliases": [],
+    "description": "鳕鱼饼汉堡，配沙拉酱。 来源：https://www.mcdonalds.com.cn/product/Filet-O-Fish；采集日期：2026-09-06。",
+    "status": "active",
+    "createdAt": "2026-09-06T04:13:52.329888669Z",
+    "updatedAt": "2026-09-06T04:13:52.329888669Z"
+  },
+  {
+    "id": "manual:mcd:single_cheeseburger",
+    "brand": "mcd",
+    "name": "吉士汉堡包",
+    "specification": "1个",
+    "category": "汉堡",
+    "aliases": [
+      "单层吉士汉堡"
+    ],
+    "description": "牛肉芝士汉堡，配酸黄瓜、洋葱及酱料。 来源：https://www.mcdonalds.com.cn/product/Cheeseburger；采集日期：2026-09-06。",
+    "status": "active",
+    "createdAt": "2026-09-06T04:13:52.333525002Z",
+    "updatedAt": "2026-09-06T04:13:52.333525002Z"
+  },
+  {
+    "id": "prod_84de8da4af81235e4a9bea281acbd2d1",
+    "brand": "mcd",
+    "name": "双层吉士汉堡",
+    "specification": "1个",
+    "category": "汉堡",
+    "aliases": [],
+    "description": "双层牛肉芝士汉堡。 来源：https://www.mcdonalds.com.cn/product/Double-Cheeseburger；采集日期：2026-09-06。",
+    "status": "active",
+    "createdAt": "2026-09-06T04:13:52.33795321Z",
+    "updatedAt": "2026-09-06T04:13:52.33795321Z"
+  },
+  {
+    "id": "prod_0fcfb191b1494c67c4474f76f455829e",
+    "brand": "mcd",
+    "name": "不素之霸双层牛堡",
+    "specification": "1个",
+    "category": "汉堡",
+    "aliases": [],
+    "description": "双牛肉饼汉堡，配德式图林根香肠。 来源：https://www.mcdonalds.com.cn/product/beef-sausage；采集日期：2026-09-06。",
+    "status": "active",
+    "createdAt": "2026-09-06T04:13:52.340766002Z",
+    "updatedAt": "2026-09-06T04:13:52.340766002Z"
+  },
+  {
+    "id": "prod_e6c27f314c5414b40b8eb90a1a9d0c21",
+    "brand": "mcd",
+    "name": "双层深海鳕鱼堡",
+    "specification": "1个",
+    "category": "汉堡",
+    "aliases": [],
+    "description": "双鳕鱼饼汉堡。 来源：https://www.mcdonalds.com.cn/product/double-fof；采集日期：2026-09-06。",
+    "status": "active",
+    "createdAt": "2026-09-06T04:13:52.34323746Z",
+    "updatedAt": "2026-09-06T04:13:52.34323746Z"
+  },
+  {
+    "id": "prod_3daa9531cb3fbd722e3ca3013efbe0e7",
+    "brand": "mcd",
+    "name": "培根安格斯厚牛堡",
+    "specification": "1个",
+    "category": "汉堡",
+    "aliases": [],
+    "description": "安格斯牛肉汉堡，配培根、黄车打芝士和生菜。 来源：https://www.mcdonalds.com.cn/product/Thick-Angus-Beef-Burger-with-Bacon；采集日期：2026-09-06。",
+    "status": "active",
+    "createdAt": "2026-09-06T04:13:52.34504121Z",
+    "updatedAt": "2026-09-06T04:13:52.34504121Z"
+  },
+  {
+    "id": "prod_849ef8737ea4cc5fc56964aa58515dbf",
+    "brand": "mcd",
+    "name": "芝士安格斯厚牛堡",
+    "specification": "1个",
+    "category": "汉堡",
+    "aliases": [],
+    "description": "安格斯牛肉汉堡，配芝士风味酱和番茄。 来源：https://www.mcdonalds.com.cn/product/Cheese-Angus；采集日期：2026-09-06。",
+    "status": "active",
+    "createdAt": "2026-09-06T04:13:52.346493002Z",
+    "updatedAt": "2026-09-06T04:13:52.346493002Z"
+  },
+  {
+    "id": "prod_9c38f8c4adec451e27dd6e9e66ff2619",
+    "brand": "mcd",
+    "name": "培根蔬萃双层牛堡",
+    "specification": "1个",
+    "category": "汉堡",
+    "aliases": [],
+    "description": "双牛肉饼汉堡，配培根、生菜、番茄和酱料。 来源：https://www.mcdonalds.com.cn/product/Bacon-Lettuce-Tomato-Double-Beef-Burger；采集日期：2026-09-06。",
+    "status": "active",
+    "createdAt": "2026-09-06T04:13:52.347842627Z",
+    "updatedAt": "2026-09-06T04:13:52.347842627Z"
+  },
+  {
+    "id": "manual:mcd:crispy_bamboo_shoot_wrap",
+    "brand": "mcd",
+    "name": "酥酥多笋卷",
+    "specification": "标准份",
+    "category": "卷",
+    "aliases": [],
+    "description": "鸡柳卷，配笋丝及红油麻香酱。 来源：https://www.mcdonalds.com.cn/product/%E9%85%A5%E9%85%A5%E5%A4%9A%E7%AC%8B%E5%8D%B7；采集日期：2026-09-06。 官网未标规格，“标准份”为本地录入约定。",
+    "status": "active",
+    "createdAt": "2026-09-06T04:13:52.34912171Z",
+    "updatedAt": "2026-09-06T04:13:52.34912171Z"
+  }
+]

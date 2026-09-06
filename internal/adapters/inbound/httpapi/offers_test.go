@@ -14,6 +14,7 @@ import (
 
 type offerAdminStub struct {
 	offer    *appoffers.Offer
+	offers   []*appoffers.Offer
 	err      error
 	created  appoffers.CreateCommand
 	imported []appoffers.CreateCommand
@@ -22,6 +23,9 @@ type offerAdminStub struct {
 func (s *offerAdminStub) Create(_ context.Context, command appoffers.CreateCommand) (*appoffers.Offer, error) {
 	s.created = command
 	return s.offer, s.err
+}
+func (s *offerAdminStub) List(context.Context) ([]*appoffers.Offer, error) {
+	return s.offers, s.err
 }
 func (s *offerAdminStub) UpdateDraft(context.Context, string, appoffers.UpdateCommand) (*appoffers.Offer, error) {
 	return s.offer, s.err
@@ -41,6 +45,20 @@ func (s *offerAdminStub) Verify(context.Context, string) (*appoffers.Offer, erro
 }
 func (s *offerAdminStub) Disable(context.Context, string) (*appoffers.Offer, error) {
 	return s.offer, s.err
+}
+
+func TestListOffers(t *testing.T) {
+	admin := &offerAdminStub{offers: []*appoffers.Offer{{ID: "offer-1", Status: appoffers.StatusPublished}}}
+	handler := NewHandler(sessionUseCaseStub{}, slog.New(slog.NewTextHandler(io.Discard, nil)), WithOfferAdmin(admin)).Routes()
+	request := httptest.NewRequest(http.MethodGet, "/v1/admin/offers", nil)
+	response := httptest.NewRecorder()
+	handler.ServeHTTP(response, request)
+	if response.Code != http.StatusOK {
+		t.Fatalf("status=%d body=%s", response.Code, response.Body.String())
+	}
+	if body := response.Body.String(); !strings.Contains(body, `"id":"offer-1"`) {
+		t.Fatalf("body=%s", body)
+	}
 }
 
 func TestCreateOfferMapsRequest(t *testing.T) {

@@ -18,6 +18,7 @@ import (
 	"meal-recommendation/internal/adapters/outbound/memory"
 	"meal-recommendation/internal/adapters/outbound/postgres"
 	appoffers "meal-recommendation/internal/application/offers"
+	appproducts "meal-recommendation/internal/application/products"
 	apprecommendation "meal-recommendation/internal/application/recommendation"
 	domainrecommendation "meal-recommendation/internal/domain/recommendation"
 	"meal-recommendation/internal/infrastructure/config"
@@ -40,6 +41,8 @@ func main() {
 
 	sessions := memory.NewSessionRepository()
 	var offers offerRepository = memory.NewOfferRepository(time.Now, cfg.OfferStaleAfter)
+	var products appproducts.Repository = memory.NewProductRepository()
+	var idGenerator appproducts.IDGenerator = ids.Default
 	var database *sql.DB
 	if cfg.DatabaseURL != "" {
 		database, err = sql.Open("pgx", cfg.DatabaseURL)
@@ -61,6 +64,8 @@ func main() {
 		}
 		cancel()
 		offers = postgres.NewOfferRepository(database, time.Now, cfg.OfferStaleAfter, cfg.CacheTTL, cfg.CacheStaleTTL)
+		products = postgres.NewProductRepository(database)
+		idGenerator = postgres.NewIDGenerator(database)
 		logger.Info("PostgreSQL offer catalog enabled")
 	} else {
 		logger.Warn("APP_DATABASE_URL is empty; using in-memory offer catalog")
@@ -72,10 +77,11 @@ func main() {
 	if cfg.MCDMCPToken == "" {
 		logger.Warn("APP_MCD_MCP_TOKEN is empty; official channel will degrade to manual offers")
 	}
-	offerAdmin := appoffers.NewService(offers, ids.NewRandomGenerator(), time.Now)
+	productAdmin := appproducts.NewService(products, idGenerator, time.Now)
+	offerAdmin := appoffers.NewService(offers, idGenerator, time.Now, appoffers.WithProductCatalog(productAdmin))
 	service := apprecommendation.NewService(
 		sessions,
-		ids.NewRandomGenerator(),
+		idGenerator,
 		time.Now,
 		cfg.SessionTTL,
 		apprecommendation.WithRecommendationDependencies(
@@ -87,7 +93,7 @@ func main() {
 		),
 	)
 
-	handler := httpapi.NewHandler(service, logger, httpapi.WithOfferAdmin(offerAdmin))
+	handler := httpapi.NewHandler(service, logger, httpapi.WithOfferAdmin(offerAdmin), httpapi.WithProductAdmin(productAdmin))
 	server := &http.Server{
 		Addr:              cfg.HTTPAddress,
 		Handler:           handler.Routes(),
