@@ -1,0 +1,67 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: meal
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}"
+      POSTGRES_DB: meal_recommendation
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U meal -d meal_recommendation"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  hermes:
+    build:
+      context: .
+      dockerfile: Dockerfile.hermes
+      args:
+        HERMES_IMAGE: "${HERMES_IMAGE:-nousresearch/hermes-agent:latest}"
+        GO_IMAGE: "${GO_IMAGE:-golang:1.25-alpine}"
+    container_name: meal-hermes
+    restart: unless-stopped
+    command: ["gateway", "run"]
+    ports:
+      - "${HERMES_HOST_BIND:-127.0.0.1}:9119:9119"
+      - "${HERMES_HOST_BIND:-127.0.0.1}:8642:8642"
+    volumes:
+      - ./hermes-data:/opt/data
+    environment:
+      HERMES_DASHBOARD: "1"
+      HERMES_DASHBOARD_HOST: "0.0.0.0"
+      HERMES_DASHBOARD_PORT: "9119"
+      HERMES_DASHBOARD_BASIC_AUTH_USERNAME: "${HERMES_DASHBOARD_USERNAME:?set HERMES_DASHBOARD_USERNAME in .env}"
+      HERMES_DASHBOARD_BASIC_AUTH_PASSWORD: "${HERMES_DASHBOARD_PASSWORD:?set HERMES_DASHBOARD_PASSWORD in .env}"
+      HERMES_DASHBOARD_BASIC_AUTH_SECRET: "${HERMES_DASHBOARD_SECRET:?set HERMES_DASHBOARD_SECRET in .env}"
+      API_SERVER_ENABLED: "true"
+      API_SERVER_HOST: "0.0.0.0"
+      API_SERVER_PORT: "8642"
+      API_SERVER_KEY: "${HERMES_API_SERVER_KEY:?set HERMES_API_SERVER_KEY in .env}"
+      HERMES_MODEL_PROVIDER: "${HERMES_MODEL_PROVIDER:-deepseek}"
+      HERMES_MODEL_NAME: "${HERMES_MODEL_NAME:?set HERMES_MODEL_NAME in .env}"
+      DEEPSEEK_API_KEY: "${DEEPSEEK_API_KEY:?set DEEPSEEK_API_KEY in .env}"
+      DEEPSEEK_BASE_URL: "${DEEPSEEK_BASE_URL:-https://api.deepseek.com}"
+      APP_DATABASE_URL: "postgres://meal:${POSTGRES_PASSWORD}@postgres:5432/meal_recommendation?sslmode=disable"
+      APP_MCD_MCP_ENDPOINT: "${APP_MCD_MCP_ENDPOINT:-https://mcp.mcd.cn}"
+      APP_MCD_MCP_TOKEN: "${APP_MCD_MCP_TOKEN:-}"
+      APP_SESSION_TTL: "${APP_SESSION_TTL:-30m}"
+      APP_EXTERNAL_TIMEOUT: "${APP_EXTERNAL_TIMEOUT:-12s}"
+      APP_CACHE_TTL: "${APP_CACHE_TTL:-2m}"
+      APP_CACHE_STALE_TTL: "${APP_CACHE_STALE_TTL:-30m}"
+      APP_OFFER_STALE_AFTER: "${APP_OFFER_STALE_AFTER:-24h}"
+      APP_MCD_MAX_DETAILS: "${APP_MCD_MAX_DETAILS:-20}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost:9119/api/status"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+volumes:
+  postgres-data:

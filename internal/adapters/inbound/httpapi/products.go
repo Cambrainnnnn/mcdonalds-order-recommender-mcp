@@ -15,6 +15,7 @@ type ProductAdminUseCase interface {
 	Update(context.Context, string, app.Fields) (*domain.Product, error)
 	Get(context.Context, string) (*domain.Product, error)
 	List(context.Context, app.Filter) ([]*domain.Product, error)
+	Search(context.Context, app.SearchRequest) (*app.SearchResponse, error)
 }
 
 func WithProductAdmin(products ProductAdminUseCase) HandlerOption {
@@ -27,9 +28,29 @@ func (h *Handler) registerProductRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /v1/admin/products/{productId}", h.getProduct)
 	mux.HandleFunc("PUT /v1/admin/products/{productId}", h.updateProduct)
 	mux.HandleFunc("GET /v1/products", h.listProducts(true))
+	mux.HandleFunc("POST /v1/products/search", h.searchProducts)
+	mux.HandleFunc("/v1/products/search", h.methodNotAllowed("POST"))
 	mux.HandleFunc("/v1/admin/products", h.methodNotAllowed("GET, HEAD, POST"))
 	mux.HandleFunc("/v1/admin/products/{productId}", h.methodNotAllowed("GET, HEAD, PUT"))
 	mux.HandleFunc("/v1/products", h.methodNotAllowed("GET, HEAD"))
+}
+
+func (h *Handler) searchProducts(w http.ResponseWriter, r *http.Request) {
+	if r.URL.RawQuery != "" {
+		writeError(w, http.StatusBadRequest, "invalid_product", "search options must be supplied in the request body")
+		return
+	}
+	var request app.SearchRequest
+	if err := decodeJSON(w, r, &request); err != nil {
+		writeRequestError(w, err)
+		return
+	}
+	result, err := h.products.Search(r.Context(), request)
+	if err != nil {
+		h.writeProductError(w, "search products", err)
+		return
+	}
+	writeJSON(w, http.StatusOK, result)
 }
 
 func (h *Handler) createProduct(w http.ResponseWriter, r *http.Request) {

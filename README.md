@@ -155,7 +155,7 @@ HTTP 入站适配层，将 HTTP 请求转换为应用用例参数，并将应用
 
 ## 运行
 
-要求 Go 1.22 或更高版本。
+要求 Go 1.25 或更高版本。
 
 ### Docker Compose（推荐用于测试）
 
@@ -163,6 +163,9 @@ HTTP 入站适配层，将 HTTP 请求转换为应用用例参数，并将应用
 
 ```bash
 docker compose up --build
+
+# 仅启动应用
+docker compose up -d --build --no-deps app
 ```
 
 应用默认访问地址为 `http://localhost:8080`，PostgreSQL 默认暴露在 `localhost:5432`。应用会在数据库就绪后启动并自动执行 migration。
@@ -183,6 +186,71 @@ docker compose down
 export APP_MCD_MCP_TOKEN='your-token'
 docker compose up --build
 ```
+
+### Hermes + MCP 统一容器
+
+`cmd/mcp` 将推荐用例包装为 stdio MCP Server。`Dockerfile.hermes` 把该二进制放入 Hermes 官方镜像；Hermes 负责 MCP 子进程的生命周期，因此 MCP 不需要单独暴露端口。PostgreSQL 仍作为独立数据容器运行。
+
+复制配置模板并生成随机密钥：
+
+```bash
+cp .env.hermes.example .env
+openssl rand -hex 32
+```
+
+将生成值分别写入 `.env` 中的密码和密钥字段，并填写 `DEEPSEEK_API_KEY`。`POSTGRES_PASSWORD` 应使用 URL 安全字符；使用上面的十六进制输出即可。默认使用 DeepSeek 官方 API 的 `deepseek-v4-flash`；可通过 `HERMES_MODEL_NAME` 更换模型，通过 `DEEPSEEK_BASE_URL` 指向代理或兼容网关。
+
+无需运行 `hermes setup`。模型、认证、Dashboard、API Server 和 MCP 配置均在容器启动时从 `.env` 注入：
+
+```bash
+docker compose -f compose.hermes.yaml up -d --build
+```
+
+镜像的初始化钩子会将模型选择同步到 `/opt/data/config.yaml`，并在 MCP 配置不存在时加入 stdio Server：
+
+```yaml
+model:
+  provider: deepseek
+  default: deepseek-v4-flash
+mcp_servers:
+  meal-recommendation:
+    command: /usr/local/bin/start-meal-mcp
+    enabled: true
+```
+
+完整的工具白名单、超时和串行调用设置由 `deploy/seed-hermes-config.py` 维护。`model.provider` 和 `model.default` 以 `.env` 为准，每次启动都会同步；已有 MCP 条目则保留 Dashboard 或 CLI 中的修改。DeepSeek API Key 只通过容器环境传入，不写入 `config.yaml`。
+
+修改 `.env` 中的模型或 API 地址后，重建容器即可应用：
+
+```bash
+docker compose -f compose.hermes.yaml up -d --build --force-recreate
+```
+
+验证运行状态和 MCP 工具发现：
+
+```bash
+curl http://localhost:9119/api/status
+curl http://localhost:8642/health
+docker compose -f compose.hermes.yaml exec hermes hermes mcp test meal-recommendation
+docker compose -f compose.hermes.yaml exec hermes hermes mcp list
+```
+
+浏览器访问 `http://localhost:9119/chat`，使用 `.env` 中的 Dashboard 用户名和密码登录。默认端口仅绑定宿主机 `127.0.0.1`。如果容器部署在远端服务器，保持该绑定，并从 Mac 建立隧道：
+
+```bash
+ssh -N -L 9119:127.0.0.1:9119 user@server
+```
+
+然后仍访问 `http://localhost:9119/chat`。
+
+MCP 暴露以下只读目录查询和推荐会话工具，不暴露套餐发布、下架或批量导入等运营写操作：
+
+- `list_product_catalog`
+- `search_product_catalog`
+- `start_recommendation_session`
+- `get_recommendation_session`
+- `update_meal_requirement`
+- `generate_meal_recommendations`
 
 ### 本地运行
 
@@ -277,9 +345,28 @@ PUT  /v1/admin/products/{productId}  修改单品（完整替换可编辑字段�
 GET  /v1/admin/products/{productId}  查询单品详情
 GET  /v1/admin/products              全量运营列表，包含启用和停用单品
 GET  /v1/products                    套餐选择用的全量列表，仅返回启用单品
+POST /v1/products/search             批量按名称和规格搜索启用单品
 ```
 
 列表直接返回 JSON 数组，无分页、无默认条数上限，空结果为 `[]`；按品牌、名称、规格、ID 升序排列。这里“全量”指本系统已录入的数据，不会自动抓取麦当劳全部菜单。两个列表均支持 `brand`、`category` 精确筛选，以及 `q` 对 ID、名称、规格、别名的子串搜索，忽略大小写。运营列表额外支持 `status=active|disabled`；`/v1/products` 只允许省略状态或指定 `active`。不支持的查询参数（例如 `limit`、`page`）及重复参数返回 400。
+
+批量搜索示例（MCP 工具 `search_product_catalog` 使用同样的请求和返回结构）：
+
+```bash
+curl -X POST http://localhost:8080/v1/products/search \
+  -H 'Content-Type: application/json' \
+  -d '{"brand":"mcd","queries":[{"name":"薯条","specification":"中份"},{"name":"薯条"},{"name":"不存在的商品"}]}'
+```
+
+`queries` 必须包含 1–100 项，每项 `name` 必填（最多 200 字符），`specification` 可选（最多 100 字符）；顶层 `brand` 是整批可选的精确品牌筛选（最多 64 字符）。参数去除首尾空白、忽略大小写；空规格表示不限规格，空品牌表示不限品牌。名称与显式规格必须分别等于同一商品的完整字段。本版不分词、不做子串、别名或模糊扩展；例如 `薯` 不匹配 `薯条`，`中` 不匹配 `中份`。请求不支持 URL 查询参数。
+
+返回 `{"results":[...]}`，结果与输入逐项同序，重复查询也保留。每项包含原始 `query`、`status` 和 `candidates`（完整商品对象数组）：
+
+- `exact`：恰好一个候选，额外返回该候选的 `resolvedProductId`。
+- `ambiguous`：多个候选，不返回 `resolvedProductId`；需要调用方澄清，不能直接把候选当成用户允许替换的商品集合。
+- `not_found`：零候选，`candidates` 为 `[]`，不返回 `resolvedProductId`。
+
+只搜索启用商品；未指定品牌或规格时，同名的不同品牌/规格都保留。全词命中的相关性相同，按品牌、名称、规格、ID 升序稳定排序，不截断候选。整批仅加载一次目录快照，HTTP 和 MCP 复用相同应用层逻辑。三种业务状态均返回 HTTP 200；任一查询参数非法则整批返回 400，存储失败返回 500。搜索仅查询目录，不自动修改推荐需求，也不代表门店实时可售。
 
 新增单品：
 

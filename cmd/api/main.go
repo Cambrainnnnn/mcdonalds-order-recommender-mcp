@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"log/slog"
 	"net/http"
@@ -11,24 +10,10 @@ import (
 	"syscall"
 	"time"
 
-	_ "github.com/jackc/pgx/v5/stdlib"
-
 	"meal-recommendation/internal/adapters/inbound/httpapi"
-	"meal-recommendation/internal/adapters/outbound/mcdmcp"
-	"meal-recommendation/internal/adapters/outbound/memory"
-	"meal-recommendation/internal/adapters/outbound/postgres"
-	appoffers "meal-recommendation/internal/application/offers"
-	appproducts "meal-recommendation/internal/application/products"
-	apprecommendation "meal-recommendation/internal/application/recommendation"
-	domainrecommendation "meal-recommendation/internal/domain/recommendation"
+	"meal-recommendation/internal/infrastructure/bootstrap"
 	"meal-recommendation/internal/infrastructure/config"
-	"meal-recommendation/internal/infrastructure/ids"
 )
-
-type offerRepository interface {
-	appoffers.Repository
-	apprecommendation.OfferCatalog
-}
 
 func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
@@ -39,61 +24,16 @@ func main() {
 		os.Exit(1)
 	}
 
-	sessions := memory.NewSessionRepository()
-	var offers offerRepository = memory.NewOfferRepository(time.Now, cfg.OfferStaleAfter)
-	var products appproducts.Repository = memory.NewProductRepository()
-	var idGenerator appproducts.IDGenerator = ids.Default
-	var database *sql.DB
-	if cfg.DatabaseURL != "" {
-		database, err = sql.Open("pgx", cfg.DatabaseURL)
-		if err != nil {
-			logger.Error("open database", "error", err)
-			os.Exit(1)
-		}
-		defer database.Close()
-		startupContext, cancel := context.WithTimeout(context.Background(), cfg.ExternalTimeout)
-		if err := database.PingContext(startupContext); err != nil {
-			cancel()
-			logger.Error("connect database", "error", err)
-			os.Exit(1)
-		}
-		if err := postgres.Migrate(startupContext, database); err != nil {
-			cancel()
-			logger.Error("migrate database", "error", err)
-			os.Exit(1)
-		}
-		cancel()
-		offers = postgres.NewOfferRepository(database, time.Now, cfg.OfferStaleAfter, cfg.CacheTTL, cfg.CacheStaleTTL)
-		products = postgres.NewProductRepository(database)
-		idGenerator = postgres.NewIDGenerator(database)
-		logger.Info("PostgreSQL offer catalog enabled")
-	} else {
-		logger.Warn("APP_DATABASE_URL is empty; using in-memory offer catalog")
+	startupContext, startupCancel := context.WithTimeout(context.Background(), cfg.ExternalTimeout)
+	runtime, err := bootstrap.New(startupContext, cfg, logger)
+	startupCancel()
+	if err != nil {
+		logger.Error("initialize application", "error", err)
+		os.Exit(1)
 	}
-	mcdHTTPClient := &http.Client{Timeout: cfg.ExternalTimeout}
-	mcdClient := mcdmcp.NewClient(cfg.MCDMCPEndpoint, cfg.MCDMCPToken, mcdHTTPClient)
-	officialCatalog := mcdmcp.NewCatalog(mcdClient, time.Now, cfg.CacheTTL, cfg.CacheStaleTTL, cfg.MCDMaxDetails)
-	officialPricing := mcdmcp.NewPricing(mcdClient, time.Now, min(cfg.CacheTTL, 30*time.Second), cfg.CacheStaleTTL)
-	if cfg.MCDMCPToken == "" {
-		logger.Warn("APP_MCD_MCP_TOKEN is empty; official channel will degrade to manual offers")
-	}
-	productAdmin := appproducts.NewService(products, idGenerator, time.Now)
-	offerAdmin := appoffers.NewService(offers, idGenerator, time.Now, appoffers.WithProductCatalog(productAdmin))
-	service := apprecommendation.NewService(
-		sessions,
-		idGenerator,
-		time.Now,
-		cfg.SessionTTL,
-		apprecommendation.WithRecommendationDependencies(
-			offers,
-			officialCatalog,
-			officialPricing,
-			domainrecommendation.NewEngine(),
-			domainrecommendation.ScoringPolicy{Version: "mvp-v1"},
-		),
-	)
+	defer runtime.Close()
 
-	handler := httpapi.NewHandler(service, logger, httpapi.WithOfferAdmin(offerAdmin), httpapi.WithProductAdmin(productAdmin))
+	handler := httpapi.NewHandler(runtime.Recommendations, logger, httpapi.WithOfferAdmin(runtime.Offers), httpapi.WithProductAdmin(runtime.Products))
 	server := &http.Server{
 		Addr:              cfg.HTTPAddress,
 		Handler:           handler.Routes(),

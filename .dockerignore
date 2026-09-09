@@ -2,6 +2,7 @@
 .gitignore
 .DS_Store
 .env
+hermes-data
 bin
 coverage.out
 *.log

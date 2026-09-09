@@ -34,4 +34,4 @@
 - [ ] 增加推荐快照 Repository 和 `GET /recommendations/latest`，保存输入、候选、报价时间和评分策略版本。
 - [ ] 增加认证授权、运营审计、限流、指标、链路追踪和真正的 readiness 检查。
 - [ ] 根据客户端选择实现自然语言推荐说明；LLM 只能表述结构化结果，不能更改价格或排名。
-- [ ] 如需对外提供 MCP 能力，新增 MCP Server Adapter，包装现有应用用例而不复制算法。
+- [x] 新增 stdio MCP Server Adapter，包装现有推荐和商品查询用例，并通过 Hermes 统一容器加载。

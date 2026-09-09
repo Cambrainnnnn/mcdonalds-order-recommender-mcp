@@ -1,6 +1,7 @@
 package httpapi
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"log/slog"
@@ -79,5 +80,65 @@ func TestProductHTTPWorkflow(t *testing.T) {
 	call("GET", "/v1/products?brand=mcd&brand=other", "", 400)
 	if result := call("DELETE", path, "", 405); result.Header().Get("Allow") != "GET, HEAD, PUT" {
 		t.Fatal("invalid Allow header")
+	}
+}
+
+func TestProductSearchHTTP(t *testing.T) {
+	service := app.NewService(memory.NewProductRepository(), ids.Default, time.Now)
+	for _, specification := range []string{"小杯", "大杯"} {
+		if _, err := service.Create(context.Background(), app.CreateCommand{Fields: app.Fields{Brand: "mcd", Name: "豆浆", Specification: specification}}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	handler := NewHandler(sessionUseCaseStub{}, slog.New(slog.NewTextHandler(io.Discard, nil)), WithProductAdmin(service)).Routes()
+	for _, tc := range []struct {
+		name, method, path, contentType, body string
+		status                                int
+	}{
+		{"batch", "POST", "/v1/products/search", "application/json", `{"brand":"mcd","queries":[{"name":"豆浆","specification":"小杯"},{"name":"豆浆"},{"name":"豆浆","specification":"中杯"}]}`, 200},
+		{"missing queries", "POST", "/v1/products/search", "application/json", `{}`, 400},
+		{"null body", "POST", "/v1/products/search", "application/json", `null`, 400},
+		{"null queries", "POST", "/v1/products/search", "application/json", `{"queries":null}`, 400},
+		{"empty queries", "POST", "/v1/products/search", "application/json", `{"queries":[]}`, 400},
+		{"null query", "POST", "/v1/products/search", "application/json", `{"queries":[null]}`, 400},
+		{"missing name", "POST", "/v1/products/search", "application/json", `{"queries":[{"specification":"小杯"}]}`, 400},
+		{"unknown field", "POST", "/v1/products/search", "application/json", `{"queries":[{"name":"豆浆","query":"小杯"}]}`, 400},
+		{"multiple objects", "POST", "/v1/products/search", "application/json", `{"queries":[{"name":"豆浆"}]}{}`, 400},
+		{"invalid JSON", "POST", "/v1/products/search", "application/json", `{`, 400},
+		{"URL options", "POST", "/v1/products/search?brand=mcd", "application/json", `{"queries":[{"name":"豆浆"}]}`, 400},
+		{"media type", "POST", "/v1/products/search", "text/plain", `{}`, 415},
+		{"method", "GET", "/v1/products/search", "", "", 405},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			request := httptest.NewRequest(tc.method, tc.path, strings.NewReader(tc.body))
+			request.Header.Set("Content-Type", tc.contentType)
+			response := httptest.NewRecorder()
+			handler.ServeHTTP(response, request)
+			if response.Code != tc.status {
+				t.Fatalf("status=%d body=%s", response.Code, response.Body.String())
+			}
+			if tc.status == 405 && response.Header().Get("Allow") != "POST" {
+				t.Fatal("invalid Allow header")
+			}
+			if tc.status != 200 {
+				return
+			}
+			var result app.SearchResponse
+			if err := json.Unmarshal(response.Body.Bytes(), &result); err != nil {
+				t.Fatal(err)
+			}
+			if len(result.Results) != 3 || result.Results[0].Status != app.SearchExact || result.Results[0].ResolvedProductID == "" || result.Results[1].Status != app.SearchAmbiguous || len(result.Results[1].Candidates) != 2 || result.Results[2].Status != app.SearchNotFound {
+				t.Fatalf("batch=%s", response.Body.String())
+			}
+			var wire struct {
+				Results []map[string]json.RawMessage `json:"results"`
+			}
+			if err := json.Unmarshal(response.Body.Bytes(), &wire); err != nil {
+				t.Fatal(err)
+			}
+			if string(wire.Results[2]["candidates"]) != "[]" || wire.Results[1]["resolvedProductId"] != nil || wire.Results[2]["resolvedProductId"] != nil {
+				t.Fatalf("invalid empty or ambiguous result: %s", response.Body.String())
+			}
+		})
 	}
 }

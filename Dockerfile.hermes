@@ -1,0 +1,26 @@
+ARG HERMES_IMAGE=nousresearch/hermes-agent:latest
+ARG GO_IMAGE=golang:1.25-alpine
+
+FROM ${GO_IMAGE} AS mcp-builder
+
+WORKDIR /src
+
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" \
+    -o /out/meal-recommendation-mcp ./cmd/mcp
+
+FROM ${HERMES_IMAGE}
+
+# The upstream image intentionally starts as root so s6 can initialize the
+# data volume and then drop privileges for supervised Hermes processes.
+USER root
+
+COPY --from=mcp-builder /out/meal-recommendation-mcp /usr/local/bin/meal-recommendation-mcp
+COPY --chmod=0755 deploy/start-meal-mcp.sh /usr/local/bin/start-meal-mcp
+COPY --chmod=0755 deploy/seed-hermes-config.py /etc/cont-init.d/10-seed-meal-mcp-config
+
+# Keep the upstream ENTRYPOINT and CMD. They provide s6 supervision for the
+# gateway and dashboard and also reap stdio MCP child processes.

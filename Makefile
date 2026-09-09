@@ -1,7 +1,10 @@
-.PHONY: run test vet fmt check
+.PHONY: run run-mcp test vet fmt check
 
 run:
 	go run ./cmd/api
+
+run-mcp:
+	go run ./cmd/mcp
 
 test:
 	go test ./...
