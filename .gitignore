@@ -2,5 +2,8 @@
 .env
 hermes-data/
 bin/
+.build/
 coverage.out
 *.log
+.ignore/
+NOTICE.md

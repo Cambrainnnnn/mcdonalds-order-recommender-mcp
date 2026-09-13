@@ -3,9 +3,11 @@
 .DS_Store
 .env
 hermes-data
+.build
 bin
 coverage.out
 *.log
 README.md
 docs
 todo.md
+NOTICE.md
