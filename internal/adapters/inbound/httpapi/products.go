@@ -24,10 +24,10 @@ func WithProductAdmin(products ProductAdminUseCase) HandlerOption {
 
 func (h *Handler) registerProductRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /v1/admin/products", h.createProduct)
-	mux.HandleFunc("GET /v1/admin/products", h.listProducts(false))
+	mux.HandleFunc("GET /v1/admin/products", h.listProducts())
 	mux.HandleFunc("GET /v1/admin/products/{productId}", h.getProduct)
 	mux.HandleFunc("PUT /v1/admin/products/{productId}", h.updateProduct)
-	mux.HandleFunc("GET /v1/products", h.listProducts(true))
+	mux.HandleFunc("GET /v1/products", h.listProducts())
 	mux.HandleFunc("POST /v1/products/search", h.searchProducts)
 	mux.HandleFunc("/v1/products/search", h.methodNotAllowed("POST"))
 	mux.HandleFunc("/v1/admin/products", h.methodNotAllowed("GET, HEAD, POST"))
@@ -91,7 +91,7 @@ func (h *Handler) getProduct(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, p)
 }
 
-func (h *Handler) listProducts(activeOnly bool) http.HandlerFunc {
+func (h *Handler) listProducts() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		query := r.URL.Query()
 		// Reject unsupported options instead of silently ignoring pagination or typos.
@@ -102,13 +102,6 @@ func (h *Handler) listProducts(activeOnly bool) http.HandlerFunc {
 			}
 		}
 		filter := app.Filter{Brand: query.Get("brand"), Category: query.Get("category"), Query: query.Get("q"), Status: domain.Status(strings.TrimSpace(query.Get("status")))}
-		if activeOnly {
-			if filter.Status != "" && filter.Status != domain.StatusActive {
-				writeError(w, http.StatusBadRequest, "invalid_product", "this catalog only returns active products; use /v1/admin/products for other statuses")
-				return
-			}
-			filter.Status = domain.StatusActive
-		}
 		products, err := h.products.List(r.Context(), filter)
 		if err != nil {
 			h.writeProductError(w, "list products", err)

@@ -5,12 +5,10 @@ import (
 	"database/sql"
 	"fmt"
 	"log/slog"
-	"net/http"
 	"time"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 
-	"meal-recommendation/internal/adapters/outbound/mcdmcp"
 	"meal-recommendation/internal/adapters/outbound/memory"
 	"meal-recommendation/internal/adapters/outbound/postgres"
 	appoffers "meal-recommendation/internal/application/offers"
@@ -68,13 +66,7 @@ func New(ctx context.Context, cfg config.Config, logger *slog.Logger) (*Runtime,
 		logger.Warn("APP_DATABASE_URL is empty; using in-memory offer catalog")
 	}
 
-	mcdHTTPClient := &http.Client{Timeout: cfg.ExternalTimeout}
-	mcdClient := mcdmcp.NewClient(cfg.MCDMCPEndpoint, cfg.MCDMCPToken, mcdHTTPClient)
-	officialCatalog := mcdmcp.NewCatalog(mcdClient, time.Now, cfg.CacheTTL, cfg.CacheStaleTTL, cfg.MCDMaxDetails)
-	officialPricing := mcdmcp.NewPricing(mcdClient, time.Now, min(cfg.CacheTTL, 30*time.Second), cfg.CacheStaleTTL)
-	if cfg.MCDMCPToken == "" {
-		logger.Warn("APP_MCD_MCP_TOKEN is empty; official channel will degrade to manual offers")
-	}
+	logger.Info("server-maintained catalog recommendation enabled; store integration deferred")
 
 	productAdmin := appproducts.NewService(products, idGenerator, time.Now)
 	offerAdmin := appoffers.NewService(offers, idGenerator, time.Now, appoffers.WithProductCatalog(productAdmin))
@@ -83,10 +75,9 @@ func New(ctx context.Context, cfg config.Config, logger *slog.Logger) (*Runtime,
 		idGenerator,
 		time.Now,
 		cfg.SessionTTL,
-		apprecommendation.WithRecommendationDependencies(
+		apprecommendation.WithLocalCatalogDependencies(
 			offers,
-			officialCatalog,
-			officialPricing,
+			products,
 			domainrecommendation.NewEngine(),
 			domainrecommendation.ScoringPolicy{Version: "mvp-v1"},
 		),

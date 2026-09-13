@@ -1,6 +1,10 @@
 # Meal Recommendation Service
 
-跨渠道智能点餐推荐服务的 Go MVP。当前版本已实现结构化需求、候选生成与排序、PostgreSQL 人工套餐库、运营 API，以及麦当劳 MCP 菜单和官方算价接入。
+当前推荐只使用服务端维护的单品、参考价和已发布套餐。城市、门店、库存和备餐不在当前范围，作为未来可选扩展保留。无需提供城市、门店或取餐方式即可推荐；取餐方式仅在用户指定时作为套餐筛选条件。
+
+单卖候选必须启用、允许 standalone 且有维护价格；停用单品仍可通过已发布套餐参与推荐。报价来自维护数据，不是官方实时报价。现有套餐有效期和供餐时段仍参与筛选。
+
+历史官方 MCP Adapter 保留供未来扩展，但当前 API/MCP 启动装配不启用它，即使设置 APP_MCD_MCP_TOKEN 也不会发起门店、菜单或算价请求。
 
 ## 架构
 
@@ -140,7 +144,7 @@ HTTP 入站适配层，将 HTTP 请求转换为应用用例参数，并将应用
 - 内存会话仓储。
 - PostgreSQL 人工套餐仓储、自动 migration 和不可变发布版本。
 - 套餐创建、CSV 导入、复核、发布、再核验和下架 API。
-- 麦当劳 Streamable HTTP MCP 菜单、套餐详情、门店优惠券和实时算价 Adapter。
+- 麦当劳 Streamable HTTP MCP Adapter 的历史实现（当前推荐不启用）。
 - 菜单、报价和人工套餐缓存，以及陈旧缓存降级。
 - LLM、人工套餐、官方菜单、官方算价和候选引擎的可替换接口。
 - 领域、应用和 HTTP 层测试。
@@ -180,7 +184,7 @@ docker compose down
 
 `docker compose down` 会保留 PostgreSQL 数据卷。如需同时删除测试数据，使用 `docker compose down -v`。
 
-如需启用麦当劳 MCP 官方菜单和算价，可在启动前设置 Token：
+以下为未来官方渠道扩展预留配置；当前启动流程不使用该 Token：
 
 ```bash
 export APP_MCD_MCP_TOKEN='your-token'
@@ -266,7 +270,7 @@ make run
 - `APP_SHUTDOWN_TIMEOUT`，默认 `10s`
 - `APP_DATABASE_URL`，PostgreSQL DSN；未设置时使用内存套餐库
 - `APP_MCD_MCP_ENDPOINT`，默认 `https://mcp.mcd.cn`
-- `APP_MCD_MCP_TOKEN`，麦当劳 MCP Bearer Token；未设置时降级为仅人工套餐
+- `APP_MCD_MCP_TOKEN`，麦当劳 MCP Bearer Token；未来官方渠道扩展预留；当前推荐不使用
 - `APP_EXTERNAL_TIMEOUT`，默认 `12s`
 - `APP_CACHE_TTL`，默认 `2m`
 - `APP_CACHE_STALE_TTL`，默认 `30m`
@@ -334,7 +338,7 @@ curl -X POST http://localhost:8080/v1/recommendation-sessions/{sessionId}/recomm
 | `description` | 可选，运营备注，最多 2000 字符 |
 | `price` | 可选参考单价，使用最小货币单位，例如 `{"amount":999900,"currency":"CNY"}` 表示 9999 元 |
 | `salesScopes` | 销售范围数组：`standalone` 表示可单卖，`offer_component` 表示可作为套餐组件；创建时省略则默认两者都有 |
-| `status` | 单品目录状态：`active` 或 `disabled`；创建默认 `active`。`disabled` 会从普通单品选择目录中隐藏，但不影响引用它的套餐 |
+| `status` | 单品目录状态：`active` 或 `disabled`；创建默认 `active`。名称识别与目录浏览包含两种状态；停用不影响引用它的套餐，可购买性在推荐阶段判断 |
 | `createdAt` / `updatedAt` | 服务端生成的 UTC 时间 |
 
 同一品牌、名称、规格的组合不可重复（忽略大小写）；不同规格可以分别录入。单品的 `price` 是参考单价，不表示特定渠道的实时价格；渠道价、门店库存或优惠有效期不属于单品主数据。仅作为套餐组成出售的活动单品使用 `salesScopes:["offer_component"]`。当前实现单品主数据与套餐关联，官方商品代码映射和 MCP 自动对齐仍需后续实现。别名当前用于单品查询，不会自动解析推荐请求中的自然语言。
@@ -344,11 +348,11 @@ POST /v1/admin/products              新增单品
 PUT  /v1/admin/products/{productId}  修改单品（完整替换可编辑字段）
 GET  /v1/admin/products/{productId}  查询单品详情
 GET  /v1/admin/products              全量运营列表，包含启用和停用单品
-GET  /v1/products                    套餐选择用的全量列表，仅返回启用单品
-POST /v1/products/search             批量按名称和规格搜索启用单品
+GET  /v1/products                    名称识别与套餐选择用的全量列表，包含停用单品
+POST /v1/products/search             批量按名称和规格搜索全部单品
 ```
 
-列表直接返回 JSON 数组，无分页、无默认条数上限，空结果为 `[]`；按品牌、名称、规格、ID 升序排列。这里“全量”指本系统已录入的数据，不会自动抓取麦当劳全部菜单。两个列表均支持 `brand`、`category` 精确筛选，以及 `q` 对 ID、名称、规格、别名的子串搜索，忽略大小写。运营列表额外支持 `status=active|disabled`；`/v1/products` 只允许省略状态或指定 `active`。不支持的查询参数（例如 `limit`、`page`）及重复参数返回 400。
+列表直接返回 JSON 数组，无分页、无默认条数上限，空结果为 `[]`；按品牌、名称、规格、ID 升序排列。这里“全量”指本系统已录入的数据，不会自动抓取麦当劳全部菜单。两个列表均支持 `brand`、`category` 精确筛选，以及 `q` 对 ID、名称、规格、别名的子串搜索，忽略大小写。两个列表默认都不按状态过滤，也支持显式 `status=active|disabled` 筛选。不支持的查询参数（例如 `limit`、`page`）及重复参数返回 400。
 
 批量搜索示例（MCP 工具 `search_product_catalog` 使用同样的请求和返回结构）：
 
@@ -366,7 +370,7 @@ curl -X POST http://localhost:8080/v1/products/search \
 - `ambiguous`：多个候选，不返回 `resolvedProductId`；需要调用方澄清，不能直接把候选当成用户允许替换的商品集合。
 - `not_found`：零候选，`candidates` 为 `[]`，不返回 `resolvedProductId`。
 
-只搜索启用商品；未指定品牌或规格时，同名的不同品牌/规格都保留。全词命中的相关性相同，按品牌、名称、规格、ID 升序稳定排序，不截断候选。整批仅加载一次目录快照，HTTP 和 MCP 复用相同应用层逻辑。三种业务状态均返回 HTTP 200；任一查询参数非法则整批返回 400，存储失败返回 500。搜索仅查询目录，不自动修改推荐需求，也不代表门店实时可售。
+搜索所有状态的商品，停用单品同样参与精确匹配和歧义判断；未指定品牌或规格时，同名的不同品牌/规格都保留。全词命中的相关性相同，按品牌、名称、规格、ID 升序稳定排序，不截断候选。整批仅加载一次目录快照，HTTP 和 MCP 复用相同应用层逻辑。三种业务状态均返回 HTTP 200；任一查询参数非法则整批返回 400，存储失败返回 500。搜索仅查询目录，不自动修改推荐需求，也不代表门店实时可售。
 
 新增单品：
 
@@ -401,7 +405,7 @@ curl --get 'http://localhost:8080/v1/admin/products' \
   --data-urlencode 'brand=mcd' --data-urlencode 'q=中薯'
 ```
 
-修改接口要求提供 `brand`、`name`、`specification`；省略 `category`、`aliases`、`description`、`price` 会清空这些字段，省略 `salesScopes` 或 `status` 则保留原值。传入 `status=disabled` 会从普通单品选择目录中隐藏，传入 `active` 恢复。没有物理删除接口，以保留套餐引用。
+修改接口要求提供 `brand`、`name`、`specification`；省略 `category`、`aliases`、`description`、`price` 会清空这些字段，省略 `salesScopes` 或 `status` 则保留原值。传入 `status=disabled` 标记单品停用，但仍能在名称查询和套餐选择中被识别；传入 `active` 恢复单品状态。没有物理删除接口，以保留套餐引用。
 
 套餐创建、草稿修改、CSV 导入、复核、发布及再核验只校验组成单品存在且包含 `offer_component` 销售范围，失败返回 `invalid_offer`（CSV 导入按行报告）。单品的 `active`/`disabled` 状态与套餐生命周期相互独立：停用单品不会影响已有套餐，也不会阻止包含它的套餐被创建、修改、复核、发布或再核验。
 
@@ -479,3 +483,5 @@ source,title,price_amount,currency,purchase_url,city,store_codes,order_modes,val
 - `CandidateEngine`
 
 真实数据源、自然语言需求抽取、商品映射和推荐快照等待办见 `todo.md`。
+
+停用套餐如需修复内容，可通过 `PUT /v1/admin/offers/{offerId}/draft` 保存为草稿（保留版本序号），然后重新复核发布。内容无需修改的停用套餐可再次调用 `POST /v1/admin/offers/{offerId}/review` 进入复核状态，再调用 `publish` 发布新版本；不能从停用状态直接发布，已有发布快照保持不变。

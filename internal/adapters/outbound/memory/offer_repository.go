@@ -112,7 +112,7 @@ func offerEligible(offer *appoffers.Offer, requirement domain.Requirement, effec
 	if len(offer.StoreCodes) > 0 && requirement.Location.StoreCode != "" && !slices.Contains(offer.StoreCodes, requirement.Location.StoreCode) {
 		return false
 	}
-	if len(offer.OrderModes) > 0 && !slices.Contains(offer.OrderModes, requirement.OrderMode) {
+	if requirement.OrderMode != "" && len(offer.OrderModes) > 0 && !slices.Contains(offer.OrderModes, requirement.OrderMode) {
 		return false
 	}
 	return true
@@ -136,6 +136,13 @@ func recommendationOffer(offer *appoffers.Offer, staleAfter time.Duration, now t
 		} else {
 			warnings = append(warnings, "人工套餐价格已超过复核时限")
 		}
+	}
+	if len(offer.OrderModes) > 0 {
+		modes := make([]string, len(offer.OrderModes))
+		for i, mode := range offer.OrderModes {
+			modes[i] = string(mode)
+		}
+		warnings = append(warnings, "套餐适用取餐方式："+strings.Join(modes, ", "))
 	}
 	return apprec.OfferVersion{
 		ID: offer.VersionID, Source: offer.Source, Title: offer.Title,

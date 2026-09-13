@@ -56,14 +56,14 @@ func TestProductHTTPWorkflow(t *testing.T) {
 	}
 	disabled := `{"brand":"mcd","name":"薯条","specification":"中份","status":"disabled"}`
 	call("PUT", path, disabled, 200)
-	if result := call("GET", "/v1/products", "", 200); strings.TrimSpace(result.Body.String()) != "[]" {
-		t.Fatal("picker returned disabled product")
+	if result := call("GET", "/v1/products", "", 200); !strings.Contains(result.Body.String(), p.ID) {
+		t.Fatal("catalog omitted disabled product")
 	}
 	if result := call("GET", "/v1/admin/products?status=disabled", "", 200); !strings.Contains(result.Body.String(), p.ID) {
 		t.Fatal("admin omitted disabled product")
 	}
 	call("PUT", path, body, 200)
-	if result := call("GET", "/v1/products", "", 200); strings.TrimSpace(result.Body.String()) != "[]" {
+	if result := call("GET", "/v1/products?status=active", "", 200); strings.TrimSpace(result.Body.String()) != "[]" {
 		t.Fatal("omitting status reactivated product")
 	}
 	call("PUT", path, `{"brand":"mcd","name":"薯条","specification":"中份","status":"active"}`, 200)
@@ -75,7 +75,7 @@ func TestProductHTTPWorkflow(t *testing.T) {
 	call("PUT", path, `{"id":"changed","brand":"mcd","name":"薯条","specification":"中份"}`, 400)
 	call("POST", "/v1/admin/products", body+body, 400)
 	call("GET", "/v1/admin/products?status=draft", "", 400)
-	call("GET", "/v1/products?status=disabled", "", 400)
+	call("GET", "/v1/products?status=disabled", "", 200)
 	call("GET", "/v1/products?limit=10", "", 400)
 	call("GET", "/v1/products?brand=mcd&brand=other", "", 400)
 	if result := call("DELETE", path, "", 405); result.Header().Get("Allow") != "GET, HEAD, PUT" {

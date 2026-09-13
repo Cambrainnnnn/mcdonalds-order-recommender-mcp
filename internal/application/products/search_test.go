@@ -50,7 +50,7 @@ func TestSearchBatch(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		want := [][]string{{products[0].ID}, {products[1].ID, products[0].ID}, {}, {}, {}, {}, {}, {products[5].ID}, {products[0].ID}, {products[4].ID}}
+		want := [][]string{{products[0].ID}, {products[3].ID, products[1].ID, products[0].ID}, {}, {products[3].ID}, {}, {}, {}, {products[5].ID}, {products[0].ID}, {products[4].ID}}
 		if len(response.Results) != len(want) {
 			t.Fatalf("results=%+v", response.Results)
 		}

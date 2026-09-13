@@ -8,6 +8,7 @@ import (
 	"slices"
 	"strings"
 
+	productdomain "meal-recommendation/internal/domain/product"
 	domain "meal-recommendation/internal/domain/recommendation"
 )
 
@@ -42,7 +43,7 @@ func (s *Service) GenerateRecommendations(ctx context.Context, id string) (*Reco
 	if missing := session.Requirement.MissingFields(); len(missing) > 0 {
 		return nil, &IncompleteRequirementError{Fields: missing}
 	}
-	if s.offers == nil || s.officialCatalog == nil || s.officialPricing == nil || s.engine == nil {
+	if s.offers == nil || s.engine == nil || (s.products == nil && (s.officialCatalog == nil || s.officialPricing == nil)) {
 		return nil, ErrRecommendationUnavailable
 	}
 
@@ -52,21 +53,46 @@ func (s *Service) GenerateRecommendations(ctx context.Context, id string) (*Reco
 		return nil, fmt.Errorf("mark recommendation session computing: %w", err)
 	}
 
-	offers, err := s.offers.ListEligible(ctx, session.Requirement)
+	requirement := session.Requirement
+	if s.products != nil {
+		requirement.Location = domain.Location{}
+	}
+	offers, err := s.offers.ListEligible(ctx, requirement)
 	if err != nil {
 		s.restoreReady(ctx, session)
 		return nil, fmt.Errorf("load eligible offers: %w", err)
 	}
-	official, err := s.officialCatalog.LoadSupply(ctx, session.Requirement)
-	if err != nil {
-		s.restoreReady(ctx, session)
-		return nil, fmt.Errorf("load official supply: %w", err)
+	var official OfficialSupply
+	if s.products == nil {
+		official, err = s.officialCatalog.LoadSupply(ctx, requirement)
+		if err != nil {
+			s.restoreReady(ctx, session)
+			return nil, fmt.Errorf("load official supply: %w", err)
+		}
 	}
 
 	options, err := normalizeCatalogOptions(offers, official)
 	if err != nil {
 		s.restoreReady(ctx, session)
 		return nil, fmt.Errorf("normalize catalog options: %w", err)
+	}
+	if s.products != nil {
+		products, err := s.products.List(ctx)
+		if err != nil {
+			s.restoreReady(ctx, session)
+			return nil, fmt.Errorf("load maintained products: %w", err)
+		}
+		for _, p := range products {
+			if p.Status != productdomain.StatusActive || !p.Supports(productdomain.SalesScopeStandalone) || p.Price == nil {
+				continue
+			}
+			options = append(options, domain.CatalogOption{
+				ID: p.ID, Channel: domain.CatalogChannel, Eligibility: domain.EligibilityEligible,
+				Products: []domain.CandidateProduct{{CanonicalProductID: p.ID, Quantity: 1}},
+				Price:    domain.PriceQuote{Amount: domain.Money{Amount: p.Price.Amount, Currency: p.Price.Currency}, Confidence: domain.PriceUnverified, QuotedAt: p.UpdatedAt, Source: domain.CatalogChannel},
+				Warnings: []string{"价格来自服务端维护的单品参考价"},
+			})
+		}
 	}
 	generated, err := s.engine.Generate(domain.EngineInput{
 		Requirement: session.Requirement,

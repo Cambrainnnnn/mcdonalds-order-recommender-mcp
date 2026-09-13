@@ -25,10 +25,10 @@ type ProductCatalog interface {
 
 type startSessionInput struct {
 	UserID       string           `json:"userId,omitempty" jsonschema:"Optional caller identifier."`
-	OrderMode    domain.OrderMode `json:"orderMode,omitempty" jsonschema:"Order mode: pickup, delivery, or drive_thru."`
-	City         string           `json:"city,omitempty" jsonschema:"City used to narrow store lookup."`
-	StoreCode    string           `json:"storeCode,omitempty" jsonschema:"Exact store code when known."`
-	StoreKeyword string           `json:"storeKeyword,omitempty" jsonschema:"Store name, address, or landmark when the exact code is unknown."`
+	OrderMode    domain.OrderMode `json:"orderMode,omitempty" jsonschema:"Optional maintained-offer filter: pickup, delivery, or drive_thru; omit when unspecified."`
+	City         string           `json:"city,omitempty" jsonschema:"Reserved for future use; ignored in current catalog recommendations."`
+	StoreCode    string           `json:"storeCode,omitempty" jsonschema:"Reserved for future use; ignored in current catalog recommendations."`
+	StoreKeyword string           `json:"storeKeyword,omitempty" jsonschema:"Reserved for future use; ignored in current catalog recommendations."`
 }
 
 type sessionIDInput struct {
@@ -73,7 +73,7 @@ func New(recommendations RecommendationUseCase, products ProductCatalog) *mcp.Se
 
 	mcp.AddTool(server, &mcp.Tool{
 		Name:        "start_recommendation_session",
-		Description: "Start a meal recommendation session. Store the returned sessionId for later calls.",
+		Description: "Start a server-catalog meal recommendation session. City, store and order mode are not required; do not ask for location. Store the returned sessionId for later calls.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input startSessionInput) (*mcp.CallToolResult, sessionOutput, error) {
 		session, err := recommendations.StartSession(ctx, app.StartSessionCommand{
 			UserID:       input.UserID,
@@ -103,7 +103,7 @@ func New(recommendations RecommendationUseCase, products ProductCatalog) *mcp.Se
 
 	mcp.AddTool(server, &mcp.Tool{
 		Name:        "generate_meal_recommendations",
-		Description: "Generate ranked recommendations for a complete session requirement using eligible offers and official pricing.",
+		Description: "Generate ranked recommendations for a complete session requirement using server-maintained published offers and priced standalone products. No store lookup, stock check or official live pricing. City, store and order mode are not required.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input sessionIDInput) (*mcp.CallToolResult, recommendationsOutput, error) {
 		result, err := recommendations.GenerateRecommendations(ctx, input.SessionID)
 		return nil, recommendationsOutput{Result: result}, err
@@ -111,20 +111,19 @@ func New(recommendations RecommendationUseCase, products ProductCatalog) *mcp.Se
 
 	mcp.AddTool(server, &mcp.Tool{
 		Name:        "list_product_catalog",
-		Description: "Browse active canonical products with optional substring and alias filters. Use search_product_catalog for batch name/specification resolution.",
+		Description: "Browse canonical products regardless of active/disabled status with optional substring and alias filters. Use search_product_catalog for batch name/specification resolution. Catalog status does not determine availability within offers; purchase eligibility is evaluated during recommendation.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input listProductsInput) (*mcp.CallToolResult, productsOutput, error) {
 		result, err := products.List(ctx, productsapp.Filter{
 			Query:    input.Query,
 			Brand:    input.Brand,
 			Category: input.Category,
-			Status:   productdomain.StatusActive,
 		})
 		return nil, productsOutput{Products: result}, err
 	})
 
 	mcp.AddTool(server, &mcp.Tool{
 		Name:        "search_product_catalog",
-		Description: "Batch search active canonical products by complete name and optional complete specification, ignoring case and surrounding whitespace. No alias or substring matching. Returns exact (one candidate), ambiguous (multiple), or not_found (none) in input order, with all candidates sorted by brand, name, specification, and ID. Only exact returns resolvedProductId; ambiguous candidates require clarification and are not automatically allowed alternatives.",
+		Description: "Batch search canonical products regardless of active/disabled status by complete name and optional complete specification, ignoring case and surrounding whitespace. No alias or substring matching. This resolves product identity, not purchase availability; disabled products can still be selected within eligible offers. Returns exact (one candidate), ambiguous (multiple), or not_found (none) in input order, with all candidates sorted by brand, name, specification, and ID. Only exact returns resolvedProductId; ambiguous candidates require clarification and are not automatically allowed alternatives.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input productsapp.SearchRequest) (*mcp.CallToolResult, *productsapp.SearchResponse, error) {
 		result, err := products.Search(ctx, input)
 		return nil, result, err

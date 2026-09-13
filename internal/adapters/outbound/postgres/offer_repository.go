@@ -220,7 +220,7 @@ func offerMatches(offer *appoffers.Offer, requirement domain.Requirement, effect
 	if len(offer.StoreCodes) > 0 && requirement.Location.StoreCode != "" && !slices.Contains(offer.StoreCodes, requirement.Location.StoreCode) {
 		return false
 	}
-	return len(offer.OrderModes) == 0 || slices.Contains(offer.OrderModes, requirement.OrderMode)
+	return requirement.OrderMode == "" || len(offer.OrderModes) == 0 || slices.Contains(offer.OrderModes, requirement.OrderMode)
 }
 
 func toRecommendationOffer(offer *appoffers.Offer, staleAfter time.Duration, now time.Time) apprec.OfferVersion {
@@ -241,6 +241,13 @@ func toRecommendationOffer(offer *appoffers.Offer, staleAfter time.Duration, now
 	groups := make([]apprec.OfferChoiceGroup, 0, len(offer.ChoiceGroups))
 	for _, group := range offer.ChoiceGroups {
 		groups = append(groups, apprec.OfferChoiceGroup{ID: group.ID, Name: group.Name, MinSelect: group.MinSelect, MaxSelect: group.MaxSelect})
+	}
+	if len(offer.OrderModes) > 0 {
+		modes := make([]string, len(offer.OrderModes))
+		for i, mode := range offer.OrderModes {
+			modes[i] = string(mode)
+		}
+		warnings = append(warnings, "套餐适用取餐方式："+strings.Join(modes, ", "))
 	}
 	return apprec.OfferVersion{ID: offer.VersionID, Source: offer.Source, Title: offer.Title, Price: domain.PriceQuote{Amount: offer.Price, Confidence: confidence, QuotedAt: quotedAt, Source: offer.Source}, ChoiceGroups: groups, Components: components, Eligibility: domain.EligibilityEligible, PurchaseURL: offer.PurchaseURL, Warnings: warnings}
 }

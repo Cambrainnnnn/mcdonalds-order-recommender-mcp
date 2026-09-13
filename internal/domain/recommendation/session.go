@@ -64,8 +64,8 @@ type ObjectiveWeights struct {
 
 type Requirement struct {
 	People     int              `json:"people,omitempty"`
-	OrderMode  OrderMode        `json:"orderMode,omitempty"`
-	Location   Location         `json:"location"`
+	OrderMode  OrderMode        `json:"orderMode,omitempty" jsonschema:"Optional filter for maintained offer order modes. Omit when unspecified; do not require the user to choose."`
+	Location   Location         `json:"location,omitempty" jsonschema:"Reserved for future store integration. Not required or used by the current server-catalog recommendation mode."`
 	TargetTime *time.Time       `json:"targetTime,omitempty"`
 	MustHave   []ProductRequest `json:"mustHave,omitempty"`
 	NiceToHave []ProductRequest `json:"niceToHave,omitempty"`
@@ -85,12 +85,6 @@ func DefaultObjectives() ObjectiveWeights {
 
 func (r Requirement) MissingFields() []string {
 	missing := make([]string, 0, 3)
-	if r.OrderMode == "" {
-		missing = append(missing, "orderMode")
-	}
-	if strings.TrimSpace(r.Location.StoreCode) == "" && strings.TrimSpace(r.Location.StoreKeyword) == "" {
-		missing = append(missing, "location")
-	}
 	if len(r.MustHave) == 0 {
 		missing = append(missing, "mustHave")
 	}

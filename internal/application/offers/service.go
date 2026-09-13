@@ -184,10 +184,11 @@ func (s *Service) UpdateDraft(ctx context.Context, id string, command UpdateComm
 	if err != nil {
 		return nil, err
 	}
-	if offer.Status != StatusDraft {
-		return nil, fmt.Errorf("%w: only draft offers can be updated", ErrInvalidTransition)
+	if offer.Status != StatusDraft && offer.Status != StatusDisabled {
+		return nil, fmt.Errorf("%w: only draft or disabled offers can be updated", ErrInvalidTransition)
 	}
 	updated := commandOffer(id, command, offer.CreatedAt)
+	updated.Version = offer.Version
 	updated.UpdatedAt = s.now().UTC()
 	if err := validateOffer(updated); err != nil {
 		return nil, err
@@ -268,7 +269,9 @@ func (s *Service) transition(ctx context.Context, id string, from, to Status, pu
 	if err != nil {
 		return nil, err
 	}
-	if offer.Status != from {
+	// Disabled offers must be reviewed again before a new version is published.
+	reopening := from == StatusDraft && to == StatusReviewed && offer.Status == StatusDisabled
+	if offer.Status != from && !reopening {
 		return nil, fmt.Errorf("%w: expected %s, got %s", ErrInvalidTransition, from, offer.Status)
 	}
 	if err := s.validateProducts(ctx, offer); err != nil {

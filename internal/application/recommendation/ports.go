@@ -5,6 +5,7 @@ import (
 	"errors"
 	"time"
 
+	productdomain "meal-recommendation/internal/domain/product"
 	domain "meal-recommendation/internal/domain/recommendation"
 )
 
@@ -132,4 +133,9 @@ type OfficialPriceItem struct {
 	CouponID    string
 	CouponCode  string
 	Selections  map[string]string
+}
+
+// ProductCatalog provides maintained standalone products, including their prices and status.
+type ProductCatalog interface {
+	List(context.Context) ([]*productdomain.Product, error)
 }

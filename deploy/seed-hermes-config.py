@@ -109,6 +109,13 @@ def main() -> None:
     home.mkdir(parents=True, exist_ok=True)
     seed_config(home)
     seed_environment(home)
+    # Keep workflow instructions aligned with the bundled server contract.
+    skill_source = Path("/usr/local/share/meal-recommendation-skill")
+    skill_target = home / "skills/productivity/meal-recommendation"
+    for source in skill_source.rglob("*.md"):
+        target = skill_target / source.relative_to(skill_source)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        atomic_write(target, source.read_text(encoding="utf-8"), 0o644)
 
     # The hook runs as root before s6 launches services. Resolve the runtime
     # account by name so deployments using HERMES_UID remapping still work.
@@ -117,6 +124,10 @@ def main() -> None:
 
     user = pwd.getpwnam("hermes")
     group = grp.getgrnam("hermes")
+    for path in skill_target.rglob("*"):
+        os.chown(path, user.pw_uid, group.gr_gid)
+    if skill_target.exists():
+        os.chown(skill_target, user.pw_uid, group.gr_gid)
     for name in ("config.yaml", "meal-mcp.env"):
         path = home / name
         if path.exists():

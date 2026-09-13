@@ -56,6 +56,20 @@ func TestOfferLifecyclePublishesImmutableVersions(t *testing.T) {
 	if err != nil || len(eligible) != 0 {
 		t.Fatalf("eligible after disable=%#v err=%v", eligible, err)
 	}
+	if _, err := service.Publish(context.Background(), offer.ID); !errors.Is(err, appoffers.ErrInvalidTransition) {
+		t.Fatalf("disabled offer bypassed review: %v", err)
+	}
+	if _, err := service.Review(context.Background(), offer.ID); err != nil {
+		t.Fatalf("review disabled offer: %v", err)
+	}
+	republished, err := service.Publish(context.Background(), offer.ID)
+	if err != nil || republished.Version != 3 || republished.Status != appoffers.StatusPublished {
+		t.Fatalf("republish=%+v err=%v", republished, err)
+	}
+	eligible, err = repository.ListEligible(context.Background(), domain.Requirement{OrderMode: domain.OrderModePickup})
+	if err != nil || len(eligible) != 1 {
+		t.Fatalf("eligible after republish=%#v err=%v", eligible, err)
+	}
 }
 
 func TestListOffersOrdersByMostRecentlyUpdated(t *testing.T) {
@@ -181,5 +195,29 @@ func TestOfferValidatesExactChoiceGroupsAndSurcharges(t *testing.T) {
 	legacy.ChoiceGroups = nil
 	if _, err := service.Create(context.Background(), legacy); err != nil {
 		t.Fatalf("legacy grouped components should remain valid: %v", err)
+	}
+}
+
+func TestUpdateDisabledOfferPreservesVersion(t *testing.T) {
+	ctx := context.Background()
+	repo := memory.NewOfferRepository(time.Now, time.Hour)
+	original := &appoffers.Offer{ID: "offer-1", Status: appoffers.StatusDisabled, Version: 4, CreatedAt: time.Now().Add(-time.Hour)}
+	if err := repo.Create(ctx, original); err != nil {
+		t.Fatal(err)
+	}
+	service := appoffers.NewService(repo, fixedID("version-5"), time.Now)
+	updated, err := service.UpdateDraft(ctx, original.ID, appoffers.UpdateCommand{Source: "manual", Title: "修复套餐", Price: domain.Money{Amount: 1990, Currency: "CNY"}, Components: []appoffers.Component{{CanonicalProductID: "221458923456789012", Quantity: 3}}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if updated.Status != appoffers.StatusDraft || updated.Version != 4 || !updated.CreatedAt.Equal(original.CreatedAt) {
+		t.Fatalf("updated=%+v", updated)
+	}
+	if _, err := service.Review(ctx, original.ID); err != nil {
+		t.Fatal(err)
+	}
+	published, err := service.Publish(ctx, original.ID)
+	if err != nil || published.Version != 5 {
+		t.Fatalf("published=%+v err=%v", published, err)
 	}
 }

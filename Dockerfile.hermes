@@ -19,6 +19,7 @@ FROM ${HERMES_IMAGE}
 USER root
 
 COPY --from=mcp-builder /out/meal-recommendation-mcp /usr/local/bin/meal-recommendation-mcp
+COPY deploy/skills/meal-recommendation /usr/local/share/meal-recommendation-skill
 COPY --chmod=0755 deploy/start-meal-mcp.sh /usr/local/bin/start-meal-mcp
 COPY --chmod=0755 deploy/seed-hermes-config.py /etc/cont-init.d/10-seed-meal-mcp-config
 

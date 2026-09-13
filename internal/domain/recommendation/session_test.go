@@ -30,3 +30,13 @@ func TestRequirementMissingFields(t *testing.T) {
 		t.Fatalf("MissingFields() = %#v, want [mustHave]", missing)
 	}
 }
+
+func TestRequirementReadyWithoutLocationAndOrderMode(t *testing.T) {
+	r := Requirement{MustHave: []ProductRequest{{ResolvedProductID: "burger", Quantity: 1}}}
+	if missing := r.MissingFields(); len(missing) != 0 {
+		t.Fatalf("unexpected fields: %v", missing)
+	}
+	if missing := (Requirement{}).MissingFields(); len(missing) != 1 || missing[0] != "mustHave" {
+		t.Fatalf("missing=%v", missing)
+	}
+}

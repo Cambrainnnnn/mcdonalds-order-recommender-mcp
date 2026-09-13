@@ -11,6 +11,7 @@ import (
 )
 
 const OfficialChannel = "official"
+const CatalogChannel = "catalog"
 
 var ErrIncompleteRequirement = errors.New("requirement is incomplete")
 
@@ -57,7 +58,7 @@ func (Engine) Generate(input EngineInput) ([]Candidate, error) {
 		if option.Eligibility == EligibilityIneligible || len(option.Products) == 0 {
 			continue
 		}
-		if option.Channel == OfficialChannel {
+		if option.Channel == OfficialChannel || option.Channel == CatalogChannel {
 			official = append(official, option)
 		} else {
 			thirdParty = append(thirdParty, option)
@@ -205,15 +206,16 @@ func officialLegForRequests(requests []ProductRequest, official []CatalogOption)
 	if len(requests) == 0 {
 		return PurchaseLeg{}, true
 	}
-	leg := PurchaseLeg{Channel: OfficialChannel, Eligibility: EligibilityEligible}
+	leg := PurchaseLeg{Eligibility: EligibilityEligible}
 	confidence := PriceLive
 	for _, request := range requests {
 		quantity := requestQuantity(request)
 		matched := false
 		for _, option := range official {
-			if option.Eligibility == EligibilityIneligible || !productsMatchRequest(option.Products, request) {
+			if option.Eligibility == EligibilityIneligible || (leg.Channel != "" && leg.Channel != option.Channel) || !productsMatchRequest(option.Products, request) {
 				continue
 			}
+			leg.Channel = option.Channel
 			for _, product := range option.Products {
 				if productMatchesRequest(product, request) {
 					product.Quantity = quantity
@@ -244,7 +246,7 @@ func officialLegForRequests(requests []ProductRequest, official []CatalogOption)
 		}
 	}
 	leg.Price.Confidence = confidence
-	leg.Price.Source = OfficialChannel
+	leg.Price.Source = leg.Channel
 	return leg, true
 }
 

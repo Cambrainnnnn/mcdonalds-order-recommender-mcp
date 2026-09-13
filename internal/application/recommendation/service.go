@@ -23,6 +23,7 @@ type Service struct {
 	ids             IDGenerator
 	now             Clock
 	ttl             time.Duration
+	products        ProductCatalog
 	offers          OfferCatalog
 	officialCatalog OfficialCatalog
 	officialPricing OfficialPricing
@@ -45,6 +46,14 @@ func WithRecommendationDependencies(
 		service.officialPricing = officialPricing
 		service.engine = engine
 		service.policy = policy
+	}
+}
+
+// WithLocalCatalogDependencies selects server-maintained supply only.
+func WithLocalCatalogDependencies(offers OfferCatalog, products ProductCatalog, engine CandidateEngine, policy domain.ScoringPolicy) ServiceOption {
+	return func(s *Service) {
+		s.offers, s.products, s.engine, s.policy = offers, products, engine, policy
+		s.officialCatalog, s.officialPricing = nil, nil
 	}
 }
 

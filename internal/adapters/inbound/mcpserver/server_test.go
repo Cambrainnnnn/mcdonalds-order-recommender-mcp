@@ -175,3 +175,62 @@ func TestServerDiscoversToolsAndStartsSession(t *testing.T) {
 		t.Fatal("empty batch should produce a tool error")
 	}
 }
+
+func TestCatalogToolsResolveDisabledProduct(t *testing.T) {
+	ctx := context.Background()
+	catalog := productsapp.NewService(memory.NewProductRepository(), ids.Default, time.Now)
+	p, err := catalog.Create(ctx, productsapp.CreateCommand{Fields: productsapp.Fields{
+		Brand: "mcd", Name: "东南亚风味椰香鸡扒堡", Specification: "1个", Status: productdomain.StatusDisabled,
+	}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	clientTransport, serverTransport := mcp.NewInMemoryTransports()
+	serverSession, err := New(&fakeRecommendations{}, catalog).Connect(ctx, serverTransport, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer serverSession.Close()
+	client := mcp.NewClient(&mcp.Implementation{Name: "test-client", Version: "1.0.0"}, nil)
+	clientSession, err := client.Connect(ctx, clientTransport, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer clientSession.Close()
+	for _, tc := range []struct {
+		name string
+		args map[string]any
+	}{
+		{"list_product_catalog", map[string]any{"query": "椰香"}},
+		{"search_product_catalog", map[string]any{"queries": []map[string]any{{"name": p.Name, "specification": p.Specification}}}},
+	} {
+		result, err := clientSession.CallTool(ctx, &mcp.CallToolParams{Name: tc.name, Arguments: tc.args})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if result.IsError {
+			t.Fatalf("%s: %+v", tc.name, result.Content)
+		}
+		payload, err := json.Marshal(result.StructuredContent)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if tc.name == "list_product_catalog" {
+			var out productsOutput
+			if err := json.Unmarshal(payload, &out); err != nil {
+				t.Fatal(err)
+			}
+			if len(out.Products) != 1 || out.Products[0].ID != p.ID || out.Products[0].Status != productdomain.StatusDisabled {
+				t.Fatalf("catalog=%s", payload)
+			}
+		} else {
+			var out productsapp.SearchResponse
+			if err := json.Unmarshal(payload, &out); err != nil {
+				t.Fatal(err)
+			}
+			if len(out.Results) != 1 || out.Results[0].Status != productsapp.SearchExact || out.Results[0].ResolvedProductID != p.ID {
+				t.Fatalf("search=%s", payload)
+			}
+		}
+	}
+}

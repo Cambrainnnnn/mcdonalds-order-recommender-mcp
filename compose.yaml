@@ -3,7 +3,7 @@ services:
     image: postgres:16-alpine
     environment:
       POSTGRES_USER: meal
-      POSTGRES_PASSWORD: meal_dev_password
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-meal_dev_password}"
       POSTGRES_DB: meal_recommendation
     ports:
       - "5432:5432"
@@ -20,7 +20,7 @@ services:
       context: .
     environment:
       APP_HTTP_ADDRESS: ":8080"
-      APP_DATABASE_URL: "postgres://meal:meal_dev_password@postgres:5432/meal_recommendation?sslmode=disable"
+      APP_DATABASE_URL: "postgres://meal:${POSTGRES_PASSWORD:-meal_dev_password}@postgres:5432/meal_recommendation?sslmode=disable"
       APP_MCD_MCP_ENDPOINT: "${APP_MCD_MCP_ENDPOINT:-https://mcp.mcd.cn}"
       APP_MCD_MCP_TOKEN: "${APP_MCD_MCP_TOKEN:-}"
     ports:

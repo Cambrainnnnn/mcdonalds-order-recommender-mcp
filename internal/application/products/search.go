@@ -40,7 +40,7 @@ type SearchResponse struct {
 	Results []SearchResult `json:"results"`
 }
 
-// Search resolves a batch against one active catalog snapshot. Explicit name and
+// Search resolves a batch against one complete catalog snapshot. Explicit name and
 // specification constraints must match the same product's complete fields.
 // All matches have equal relevance, so List's brand/name/specification/ID order
 // breaks ties. Never infer a unique match by truncating the candidate set.
@@ -65,7 +65,7 @@ func (s *Service) Search(ctx context.Context, request SearchRequest) (*SearchRes
 		queries[i] = query
 	}
 
-	catalog, err := s.List(ctx, Filter{Brand: brand, Status: domain.StatusActive})
+	catalog, err := s.List(ctx, Filter{Brand: brand})
 	if err != nil {
 		return nil, err
 	}
