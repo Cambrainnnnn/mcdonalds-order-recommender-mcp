@@ -25,6 +25,7 @@ type offerCacheEntry struct {
 
 type OfferRepository struct {
 	db         *sql.DB
+	tx         *sql.Tx
 	now        func() time.Time
 	staleAfter time.Duration
 	cacheTTL   time.Duration
@@ -38,21 +39,12 @@ func NewOfferRepository(db *sql.DB, now func() time.Time, staleAfter, cacheTTL, 
 }
 
 func (r *OfferRepository) Create(ctx context.Context, offer *appoffers.Offer) error {
-	payload, err := json.Marshal(offer)
-	if err != nil {
-		return fmt.Errorf("marshal offer: %w", err)
-	}
-	_, err = r.db.ExecContext(ctx, `INSERT INTO offers (id,status,version,draft,created_at,updated_at) VALUES ($1,$2,$3,$4,$5,$6)`,
-		offer.ID, offer.Status, offer.Version, payload, offer.CreatedAt, offer.UpdatedAt)
-	if err == nil {
-		r.invalidate()
-	}
-	return err
+	return r.write(ctx, offer, true)
 }
 
 func (r *OfferRepository) Get(ctx context.Context, id string) (*appoffers.Offer, error) {
 	var payload []byte
-	err := r.db.QueryRowContext(ctx, `SELECT draft FROM offers WHERE id=$1`, id).Scan(&payload)
+	err := r.query().QueryRowContext(ctx, `SELECT draft FROM offers WHERE id=$1`, id).Scan(&payload)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, appoffers.ErrOfferNotFound
 	}
@@ -67,7 +59,7 @@ func (r *OfferRepository) Get(ctx context.Context, id string) (*appoffers.Offer,
 }
 
 func (r *OfferRepository) List(ctx context.Context) ([]*appoffers.Offer, error) {
-	rows, err := r.db.QueryContext(ctx, `SELECT draft FROM offers`)
+	rows, err := r.query().QueryContext(ctx, `SELECT draft FROM offers`)
 	if err != nil {
 		return nil, err
 	}
@@ -92,21 +84,7 @@ func (r *OfferRepository) List(ctx context.Context) ([]*appoffers.Offer, error) 
 }
 
 func (r *OfferRepository) Save(ctx context.Context, offer *appoffers.Offer) error {
-	payload, err := json.Marshal(offer)
-	if err != nil {
-		return fmt.Errorf("marshal offer: %w", err)
-	}
-	result, err := r.db.ExecContext(ctx, `UPDATE offers SET status=$2,version=$3,draft=$4,updated_at=$5 WHERE id=$1`,
-		offer.ID, offer.Status, offer.Version, payload, offer.UpdatedAt)
-	if err != nil {
-		return err
-	}
-	rows, err := result.RowsAffected()
-	if err == nil && rows == 0 {
-		return appoffers.ErrOfferNotFound
-	}
-	r.invalidate()
-	return err
+	return r.write(ctx, offer, false)
 }
 
 func (r *OfferRepository) Publish(ctx context.Context, offer *appoffers.Offer) error {
@@ -153,7 +131,7 @@ func (r *OfferRepository) ListEligible(ctx context.Context, requirement domain.R
 	if cached, ok := r.cached(key, now, false); ok {
 		return cached, nil
 	}
-	rows, err := r.db.QueryContext(ctx, `SELECT v.id, v.snapshot FROM offers o JOIN offer_versions v ON v.offer_id=o.id AND v.version=o.version WHERE o.status='published' AND (v.valid_from IS NULL OR v.valid_from <= $1) AND (v.valid_until IS NULL OR v.valid_until > $1)`, effectiveAt)
+	rows, err := r.query().QueryContext(ctx, `SELECT v.id, v.snapshot FROM offers o JOIN offer_versions v ON v.offer_id=o.id AND v.version=o.version WHERE o.status='published' AND (v.valid_from IS NULL OR v.valid_from <= $1) AND (v.valid_until IS NULL OR v.valid_until > $1)`, effectiveAt)
 	if err != nil {
 		if cached, ok := r.cached(key, now, true); ok {
 			return markOffersStale(cached), nil

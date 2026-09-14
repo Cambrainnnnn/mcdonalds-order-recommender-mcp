@@ -17,9 +17,11 @@ import (
 )
 
 var (
-	ErrOfferNotFound     = errors.New("offer not found")
-	ErrInvalidOffer      = errors.New("invalid offer")
-	ErrInvalidTransition = errors.New("invalid offer status transition")
+	ErrOfferConflict       = errors.New("offer already exists")
+	ErrIdempotencyConflict = errors.New("idempotency key payload mismatch")
+	ErrOfferNotFound       = errors.New("offer not found")
+	ErrInvalidOffer        = errors.New("invalid offer")
+	ErrInvalidTransition   = errors.New("invalid offer status transition")
 )
 
 type Status string
@@ -44,6 +46,7 @@ type ValidTimeRule struct {
 }
 
 type Offer struct {
+	ExternalID   string             `json:"externalId,omitempty"`
 	ID           string             `json:"id"`
 	VersionID    string             `json:"versionId,omitempty"`
 	Version      int                `json:"version"`
@@ -66,6 +69,7 @@ type Offer struct {
 }
 
 type CreateCommand struct {
+	ExternalID   string
 	Source       string
 	Title        string
 	Price        domain.Money
@@ -291,7 +295,7 @@ func (s *Service) transition(ctx context.Context, id string, from, to Status, pu
 
 func commandOffer(id string, command CreateCommand, createdAt time.Time) *Offer {
 	return &Offer{
-		ID: id, Status: StatusDraft, Source: strings.TrimSpace(command.Source), Title: strings.TrimSpace(command.Title),
+		ID: id, ExternalID: strings.TrimSpace(command.ExternalID), Status: StatusDraft, Source: strings.TrimSpace(command.Source), Title: strings.TrimSpace(command.Title),
 		Price: command.Price, PurchaseURL: strings.TrimSpace(command.PurchaseURL), City: strings.TrimSpace(command.City),
 		StoreCodes: command.StoreCodes, OrderModes: command.OrderModes, ValidFrom: command.ValidFrom,
 		ValidUntil: command.ValidUntil, ValidTimes: command.ValidTimes, ChoiceGroups: slices.Clone(command.ChoiceGroups), Components: slices.Clone(command.Components), CreatedAt: createdAt, UpdatedAt: createdAt,
@@ -324,7 +328,7 @@ func validateOffer(offer *Offer) error {
 	for _, field := range []struct {
 		value string
 		limit int
-	}{{offer.Source, 64}, {offer.Title, 200}} {
+	}{{offer.Source, 64}, {offer.Title, 200}, {offer.ExternalID, 200}} {
 		if strings.ContainsRune(field.value, '\x00') || utf8.RuneCountInString(field.value) > field.limit {
 			return fmt.Errorf("%w: source, title or externalId is invalid", ErrInvalidOffer)
 		}

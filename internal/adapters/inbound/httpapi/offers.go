@@ -18,6 +18,7 @@ import (
 )
 
 type offerRequest struct {
+	ExternalID   string                    `json:"externalId"`
 	Source       string                    `json:"source"`
 	Title        string                    `json:"title"`
 	Price        domain.Money              `json:"price"`
@@ -33,7 +34,7 @@ type offerRequest struct {
 }
 
 func (r offerRequest) command() appoffers.CreateCommand {
-	return appoffers.CreateCommand{Source: r.Source, Title: r.Title, Price: r.Price, PurchaseURL: r.PurchaseURL, City: r.City, StoreCodes: r.StoreCodes, OrderModes: r.OrderModes, ValidFrom: r.ValidFrom, ValidUntil: r.ValidUntil, ValidTimes: r.ValidTimes, ChoiceGroups: r.ChoiceGroups, Components: r.Components}
+	return appoffers.CreateCommand{ExternalID: r.ExternalID, Source: r.Source, Title: r.Title, Price: r.Price, PurchaseURL: r.PurchaseURL, City: r.City, StoreCodes: r.StoreCodes, OrderModes: r.OrderModes, ValidFrom: r.ValidFrom, ValidUntil: r.ValidUntil, ValidTimes: r.ValidTimes, ChoiceGroups: r.ChoiceGroups, Components: r.Components}
 }
 
 func (h *Handler) registerOfferAdminRoutes(mux *http.ServeMux) {
@@ -129,6 +130,8 @@ func (h *Handler) importOffers(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) writeOfferError(w http.ResponseWriter, operation string, err error) {
 	switch {
+	case errors.Is(err, appoffers.ErrOfferConflict):
+		writeError(w, http.StatusConflict, "offer_conflict", err.Error())
 	case errors.Is(err, appoffers.ErrOfferNotFound):
 		writeError(w, http.StatusNotFound, "offer_not_found", err.Error())
 	case errors.Is(err, appoffers.ErrInvalidOffer):

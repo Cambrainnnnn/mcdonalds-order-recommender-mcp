@@ -53,6 +53,11 @@ func Migrate(ctx context.Context, db *sql.DB) error {
 				return fmt.Errorf("apply migration %s part %d: %w", entry.Name(), index+1, err)
 			}
 		}
+		if entry.Name() == "005_offer_ingestion.sql" {
+			if err := backfillOfferKeys(ctx, tx); err != nil {
+				return err
+			}
+		}
 		if _, err := tx.ExecContext(ctx, `INSERT INTO schema_migrations(version) VALUES ($1)`, entry.Name()); err != nil {
 			return err
 		}

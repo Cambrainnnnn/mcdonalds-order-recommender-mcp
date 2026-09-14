@@ -30,6 +30,12 @@ func NewOfferRepository(now func() time.Time, staleAfter time.Duration) *OfferRe
 func (r *OfferRepository) Create(_ context.Context, offer *appoffers.Offer) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
+	if _, exists := r.offers[offer.ID]; exists {
+		return appoffers.ErrOfferConflict
+	}
+	if err := r.checkIdentity(offer); err != nil {
+		return err
+	}
 	r.offers[offer.ID] = cloneOffer(offer)
 	return nil
 }
@@ -59,6 +65,9 @@ func (r *OfferRepository) Save(_ context.Context, offer *appoffers.Offer) error 
 	defer r.mu.Unlock()
 	if _, ok := r.offers[offer.ID]; !ok {
 		return appoffers.ErrOfferNotFound
+	}
+	if err := r.checkIdentity(offer); err != nil {
+		return err
 	}
 	r.offers[offer.ID] = cloneOffer(offer)
 	return nil
@@ -184,3 +193,16 @@ func cloneOffer(offer *appoffers.Offer) *appoffers.Offer {
 
 var _ appoffers.Repository = (*OfferRepository)(nil)
 var _ apprec.OfferCatalog = (*OfferRepository)(nil)
+
+func (r *OfferRepository) checkIdentity(offer *appoffers.Offer) error {
+	key := appoffers.BusinessKey(offer)
+	if current, ok := r.offers[offer.ID]; ok && appoffers.BusinessKey(current) == key {
+		return nil
+	}
+	for id, existing := range r.offers {
+		if id != offer.ID && appoffers.BusinessKey(existing) == key {
+			return appoffers.ErrOfferConflict
+		}
+	}
+	return nil
+}

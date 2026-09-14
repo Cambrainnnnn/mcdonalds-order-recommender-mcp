@@ -10,6 +10,7 @@ import (
 	"meal-recommendation/internal/adapters/outbound/memory"
 	appoffers "meal-recommendation/internal/application/offers"
 	domain "meal-recommendation/internal/domain/recommendation"
+	"meal-recommendation/internal/infrastructure/ids"
 )
 
 type fixedID string
@@ -74,8 +75,8 @@ func TestOfferLifecyclePublishesImmutableVersions(t *testing.T) {
 
 func TestListOffersOrdersByMostRecentlyUpdated(t *testing.T) {
 	repository := memory.NewOfferRepository(time.Now, 24*time.Hour)
-	older := &appoffers.Offer{ID: "offer-b", UpdatedAt: time.Date(2026, time.September, 5, 8, 0, 0, 0, time.UTC)}
-	newer := &appoffers.Offer{ID: "offer-a", UpdatedAt: older.UpdatedAt.Add(time.Hour)}
+	older := &appoffers.Offer{ID: "offer-b", Title: "older", UpdatedAt: time.Date(2026, time.September, 5, 8, 0, 0, 0, time.UTC)}
+	newer := &appoffers.Offer{ID: "offer-a", Title: "newer", UpdatedAt: older.UpdatedAt.Add(time.Hour)}
 	if err := repository.Create(context.Background(), older); err != nil {
 		t.Fatal(err)
 	}
@@ -153,7 +154,7 @@ func TestOfferRejectsInvalidDailyWindow(t *testing.T) {
 
 func TestOfferValidatesExactChoiceGroupsAndSurcharges(t *testing.T) {
 	repository := memory.NewOfferRepository(time.Now, 24*time.Hour)
-	service := appoffers.NewService(repository, fixedID("221458923456789099"), time.Now)
+	service := appoffers.NewService(repository, ids.Default, time.Now)
 	command := appoffers.CreateCommand{
 		Source: "meituan", Title: "小食三选二", Price: domain.Money{Amount: 1000, Currency: "CNY"},
 		ChoiceGroups: []appoffers.ChoiceGroup{{ID: "221458923456789010", Name: "小食三选二", MinSelect: 2, MaxSelect: 2}},

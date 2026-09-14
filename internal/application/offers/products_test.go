@@ -47,6 +47,7 @@ func TestOfferProductReferences(t *testing.T) {
 	if _, err := catalog.Update(ctx, p.ID, fields); err != nil {
 		t.Fatal(err)
 	}
+	command.Title += "新套餐"
 	if _, err := service.Create(ctx, command); err != nil {
 		t.Fatalf("offer-only product rejected: %v", err)
 	}
@@ -55,6 +56,7 @@ func TestOfferProductReferences(t *testing.T) {
 	if _, err := service.UpdateDraft(ctx, offer.ID, invalid); !errors.Is(err, offers.ErrInvalidOffer) {
 		t.Fatalf("invalid update accepted: %v", err)
 	}
+	command.Title += "导入"
 	imported := service.Import(ctx, []offers.CreateCommand{command, invalid})
 	if len(imported.Created) != 1 || len(imported.Errors) != 1 || imported.Errors[0].Row != 3 {
 		t.Fatalf("import=%+v", imported)
@@ -63,9 +65,11 @@ func TestOfferProductReferences(t *testing.T) {
 	if _, err := catalog.Update(ctx, p.ID, fields); err != nil {
 		t.Fatal(err)
 	}
+	command.Title += "新套餐"
 	if _, err := service.Create(ctx, command); err != nil {
 		t.Fatalf("disabled product rejected during create: %v", err)
 	}
+	command.Title += "修改"
 	if _, err := service.UpdateDraft(ctx, offer.ID, command); err != nil {
 		t.Fatalf("disabled product rejected during update: %v", err)
 	}
