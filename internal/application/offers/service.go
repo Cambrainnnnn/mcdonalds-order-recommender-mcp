@@ -108,6 +108,7 @@ type IDGenerator interface{ NewID() (string, error) }
 type Clock func() time.Time
 
 type Service struct {
+	ingestion  IngestionStore
 	repository Repository
 	ids        IDGenerator
 	now        Clock
@@ -139,6 +140,13 @@ func NewService(repository Repository, ids IDGenerator, now Clock, options ...Op
 }
 
 func (s *Service) Create(ctx context.Context, command CreateCommand) (*Offer, error) {
+	if s.ingestion != nil {
+		result, err := s.Ingest(ctx, "", command, nil, "")
+		if err != nil {
+			return nil, err
+		}
+		return result.Offer, nil
+	}
 
 	id, err := s.ids.NewID()
 	if err != nil {
@@ -173,6 +181,13 @@ func (s *Service) List(ctx context.Context) ([]*Offer, error) {
 }
 
 func (s *Service) UpdateDraft(ctx context.Context, id string, command UpdateCommand) (*Offer, error) {
+	if s.ingestion != nil {
+		result, err := s.Ingest(ctx, id, command, nil, "")
+		if err != nil {
+			return nil, err
+		}
+		return result.Offer, nil
+	}
 
 	offer, err := s.repository.Get(ctx, id)
 	if err != nil {

@@ -11,7 +11,7 @@ import (
 	domain "meal-recommendation/internal/domain/product"
 )
 
-type ProductRepository struct{ db *sql.DB }
+type ProductRepository struct{ db executor }
 
 func NewProductRepository(db *sql.DB) *ProductRepository { return &ProductRepository{db: db} }
 

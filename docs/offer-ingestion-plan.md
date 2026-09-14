@@ -158,7 +158,7 @@ APP_TEST_DATABASE_URL='postgres://meal_test@127.0.0.1:55432/postgres?sslmode=dis
 
 - [已提交 2c1457c] 1. 环境脚本与基线：index 独立导出的完整测试（含 PostgreSQL）和 vet 均通过。
 - [已提交 1a8f023] 2. 共享选择与计价规则：独立候选提交完整测试（含 PostgreSQL）通过。
-- [验证通过，准备提交] 3. 套餐业务防重与迁移：完整测试（含 PostgreSQL）通过；HTTP externalId 与 409 映射补验通过。历史回填测试独立到 offer_identity_test.go。
-- [待提交] 4. 单品/套餐原子保存与持久化幂等。
+- [已提交 009b965] 3. 套餐业务防重与迁移：完整测试（含 PostgreSQL）通过；HTTP externalId 与 409 映射补验通过。历史回填测试独立到 offer_identity_test.go。
+- [验证通过，准备提交] 4. 单品/套餐原子保存与持久化幂等：独立候选完整 race 测试通过，含 PostgreSQL 多连接并发、回滚及发布后计价。
 - [待提交] 5. HTTP 聚合录入及回归测试。
 - [待提交] 6. 工作流程、示例与最终验证。

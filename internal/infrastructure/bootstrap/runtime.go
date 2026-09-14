@@ -39,8 +39,11 @@ func New(ctx context.Context, cfg config.Config, logger *slog.Logger) (*Runtime,
 	}
 
 	sessions := memory.NewSessionRepository()
-	var offers offerRepository = memory.NewOfferRepository(time.Now, cfg.OfferStaleAfter)
-	var products appproducts.Repository = memory.NewProductRepository()
+	memoryOffers := memory.NewOfferRepository(time.Now, cfg.OfferStaleAfter)
+	memoryProducts := memory.NewProductRepository()
+	var offers offerRepository = memoryOffers
+	var products appproducts.Repository = memoryProducts
+	var ingestion appoffers.IngestionStore = memory.NewIngestionStore(memoryOffers, memoryProducts)
 	var idGenerator appproducts.IDGenerator = ids.Default
 	var database *sql.DB
 
@@ -60,6 +63,7 @@ func New(ctx context.Context, cfg config.Config, logger *slog.Logger) (*Runtime,
 		}
 		offers = postgres.NewOfferRepository(database, time.Now, cfg.OfferStaleAfter, cfg.CacheTTL, cfg.CacheStaleTTL)
 		products = postgres.NewProductRepository(database)
+		ingestion = offers.(*postgres.OfferRepository)
 		idGenerator = postgres.NewIDGenerator(database)
 		logger.Info("PostgreSQL offer catalog enabled")
 	} else {
@@ -69,7 +73,7 @@ func New(ctx context.Context, cfg config.Config, logger *slog.Logger) (*Runtime,
 	logger.Info("server-maintained catalog recommendation enabled; store integration deferred")
 
 	productAdmin := appproducts.NewService(products, idGenerator, time.Now)
-	offerAdmin := appoffers.NewService(offers, idGenerator, time.Now, appoffers.WithProductCatalog(productAdmin))
+	offerAdmin := appoffers.NewService(offers, idGenerator, time.Now, appoffers.WithProductCatalog(productAdmin), appoffers.WithIngestionStore(ingestion))
 	recommendations := apprecommendation.NewService(
 		sessions,
 		idGenerator,
