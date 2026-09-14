@@ -224,10 +224,7 @@ func offerMatches(offer *appoffers.Offer, requirement domain.Requirement, effect
 }
 
 func toRecommendationOffer(offer *appoffers.Offer, staleAfter time.Duration, now time.Time) apprec.OfferVersion {
-	components := make([]apprec.OfferComponent, 0, len(offer.Components))
-	for _, item := range offer.Components {
-		components = append(components, apprec.OfferComponent{CanonicalProductID: item.CanonicalProductID, Quantity: item.Quantity, ChoiceGroupID: item.ChoiceGroupID, ExtraPrice: item.ExtraPrice})
-	}
+	components := slices.Clone(offer.Components)
 	confidence, quotedAt := domain.PriceVerifiedPast, offer.UpdatedAt
 	warnings := []string(nil)
 	if offer.VerifiedAt != nil {
@@ -240,7 +237,7 @@ func toRecommendationOffer(offer *appoffers.Offer, staleAfter time.Duration, now
 	}
 	groups := make([]apprec.OfferChoiceGroup, 0, len(offer.ChoiceGroups))
 	for _, group := range offer.ChoiceGroups {
-		groups = append(groups, apprec.OfferChoiceGroup{ID: group.ID, Name: group.Name, MinSelect: group.MinSelect, MaxSelect: group.MaxSelect})
+		groups = append(groups, group)
 	}
 	if len(offer.OrderModes) > 0 {
 		modes := make([]string, len(offer.OrderModes))

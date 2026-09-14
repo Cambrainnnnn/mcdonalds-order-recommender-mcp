@@ -5,6 +5,7 @@ import (
 	"errors"
 	"time"
 
+	selection "meal-recommendation/internal/domain/offer"
 	productdomain "meal-recommendation/internal/domain/product"
 	domain "meal-recommendation/internal/domain/recommendation"
 )
@@ -66,19 +67,8 @@ type OfferVersion struct {
 	Warnings     []string
 }
 
-type OfferChoiceGroup struct {
-	ID        string
-	Name      string
-	MinSelect int
-	MaxSelect int
-}
-
-type OfferComponent struct {
-	CanonicalProductID string
-	Quantity           int
-	ChoiceGroupID      string
-	ExtraPrice         int64
-}
+type OfferChoiceGroup = selection.ChoiceGroup
+type OfferComponent = selection.Component
 
 type OfficialSupply struct {
 	StoreCode string

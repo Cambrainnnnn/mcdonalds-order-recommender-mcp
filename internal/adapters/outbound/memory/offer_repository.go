@@ -119,13 +119,7 @@ func offerEligible(offer *appoffers.Offer, requirement domain.Requirement, effec
 }
 
 func recommendationOffer(offer *appoffers.Offer, staleAfter time.Duration, now time.Time) apprec.OfferVersion {
-	components := make([]apprec.OfferComponent, 0, len(offer.Components))
-	for _, component := range offer.Components {
-		components = append(components, apprec.OfferComponent{
-			CanonicalProductID: component.CanonicalProductID, Quantity: component.Quantity,
-			ChoiceGroupID: component.ChoiceGroupID, ExtraPrice: component.ExtraPrice,
-		})
-	}
+	components := slices.Clone(offer.Components)
 	confidence := domain.PriceVerifiedPast
 	warnings := []string(nil)
 	quotedAt := offer.UpdatedAt
@@ -155,7 +149,7 @@ func recommendationOffer(offer *appoffers.Offer, staleAfter time.Duration, now t
 func recommendationChoiceGroups(groups []appoffers.ChoiceGroup) []apprec.OfferChoiceGroup {
 	result := make([]apprec.OfferChoiceGroup, 0, len(groups))
 	for _, group := range groups {
-		result = append(result, apprec.OfferChoiceGroup{ID: group.ID, Name: group.Name, MinSelect: group.MinSelect, MaxSelect: group.MaxSelect})
+		result = append(result, group)
 	}
 	return result
 }

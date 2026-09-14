@@ -7,9 +7,11 @@ import (
 	"slices"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	appProducts "meal-recommendation/internal/application/products"
 	"meal-recommendation/internal/domain/identity"
+	selection "meal-recommendation/internal/domain/offer"
 	product "meal-recommendation/internal/domain/product"
 	domain "meal-recommendation/internal/domain/recommendation"
 )
@@ -29,22 +31,8 @@ const (
 	StatusDisabled  Status = "disabled"
 )
 
-type Component struct {
-	CanonicalProductID string `json:"canonicalProductId"`
-	Quantity           int    `json:"quantity"`
-	ChoiceGroupID      string `json:"choiceGroupId,omitempty"`
-	ExtraPrice         int64  `json:"extraPrice,omitempty"`
-}
-
-// ChoiceGroup defines how many distinct components can be selected from a
-// group. Use the same minSelect and maxSelect value for an exact "n of m"
-// choice.
-type ChoiceGroup struct {
-	ID        string `json:"id"`
-	Name      string `json:"name,omitempty"`
-	MinSelect int    `json:"minSelect"`
-	MaxSelect int    `json:"maxSelect"`
-}
+type Component = selection.Component
+type ChoiceGroup = selection.ChoiceGroup
 
 // ValidTimeRule describes a daily availability window. Weekdays use Go's
 // time.Weekday numbering (Sunday=0); an empty list means every day. Start is
@@ -147,6 +135,7 @@ func NewService(repository Repository, ids IDGenerator, now Clock, options ...Op
 }
 
 func (s *Service) Create(ctx context.Context, command CreateCommand) (*Offer, error) {
+
 	id, err := s.ids.NewID()
 	if err != nil {
 		return nil, fmt.Errorf("generate offer id: %w", err)
@@ -180,6 +169,7 @@ func (s *Service) List(ctx context.Context) ([]*Offer, error) {
 }
 
 func (s *Service) UpdateDraft(ctx context.Context, id string, command UpdateCommand) (*Offer, error) {
+
 	offer, err := s.repository.Get(ctx, id)
 	if err != nil {
 		return nil, err
@@ -331,6 +321,14 @@ func (s *Service) validateProducts(ctx context.Context, offer *Offer) error {
 
 func validateOffer(offer *Offer) error {
 	offer.Price.Currency = strings.ToUpper(strings.TrimSpace(offer.Price.Currency))
+	for _, field := range []struct {
+		value string
+		limit int
+	}{{offer.Source, 64}, {offer.Title, 200}} {
+		if strings.ContainsRune(field.value, '\x00') || utf8.RuneCountInString(field.value) > field.limit {
+			return fmt.Errorf("%w: source, title or externalId is invalid", ErrInvalidOffer)
+		}
+	}
 	if offer.Source == "" || offer.Title == "" {
 		return fmt.Errorf("%w: source and title are required", ErrInvalidOffer)
 	}
@@ -341,8 +339,7 @@ func validateOffer(offer *Offer) error {
 		return fmt.Errorf("%w: at least one component is required", ErrInvalidOffer)
 	}
 	groups := make(map[string]ChoiceGroup, len(offer.ChoiceGroups))
-	componentCounts := make(map[string]int, len(offer.ChoiceGroups))
-	variantCount := 1
+
 	for index := range offer.ChoiceGroups {
 		group := &offer.ChoiceGroups[index]
 		group.ID = strings.TrimSpace(group.ID)
@@ -361,6 +358,7 @@ func validateOffer(offer *Offer) error {
 	for index := range offer.Components {
 		offer.Components[index].CanonicalProductID = strings.TrimSpace(offer.Components[index].CanonicalProductID)
 		offer.Components[index].ChoiceGroupID = strings.TrimSpace(offer.Components[index].ChoiceGroupID)
+		offer.Components[index].ExclusiveKey = strings.TrimSpace(offer.Components[index].ExclusiveKey)
 		component := offer.Components[index]
 		if component.ExtraPrice < 0 {
 			return fmt.Errorf("%w: component %d extraPrice must not be negative", ErrInvalidOffer, index+1)
@@ -373,23 +371,14 @@ func validateOffer(offer *Offer) error {
 				if _, exists := groups[component.ChoiceGroupID]; !exists {
 					return fmt.Errorf("%w: component %d references unknown choice group %q", ErrInvalidOffer, index+1, component.ChoiceGroupID)
 				}
-				componentCounts[component.ChoiceGroupID]++
 			}
 		}
 		if !identity.Valid(component.CanonicalProductID) || component.Quantity <= 0 {
 			return fmt.Errorf("%w: component product ID must be a snowflake string and quantity must be positive", ErrInvalidOffer)
 		}
 	}
-	for _, group := range offer.ChoiceGroups {
-		optionCount := componentCounts[group.ID]
-		if group.MaxSelect > optionCount {
-			return fmt.Errorf("%w: choice group %q maxSelect %d exceeds its %d components", ErrInvalidOffer, group.ID, group.MaxSelect, optionCount)
-		}
-		combinations := selectionCombinationCount(optionCount, group.MinSelect, group.MaxSelect, maxOfferVariants)
-		if combinations == 0 || variantCount > maxOfferVariants/combinations {
-			return fmt.Errorf("%w: choice groups produce more than %d combinations", ErrInvalidOffer, maxOfferVariants)
-		}
-		variantCount *= combinations
+	if _, err := selection.Expand(offer.ChoiceGroups, offer.Components, offer.Price.Amount); err != nil {
+		return fmt.Errorf("%w: %v", ErrInvalidOffer, err)
 	}
 	for _, mode := range offer.OrderModes {
 		if mode == "" || !mode.Valid() {
@@ -423,27 +412,6 @@ func validateOffer(offer *Offer) error {
 		}
 	}
 	return nil
-}
-
-const maxOfferVariants = 10_000
-
-func selectionCombinationCount(options, minSelect, maxSelect, limit int) int {
-	total := 0
-	for selected := minSelect; selected <= maxSelect; selected++ {
-		combination := 1
-		for i := 1; i <= selected; i++ {
-			factor := options - selected + i
-			if combination > limit*i/factor {
-				return limit + 1
-			}
-			combination = combination * factor / i
-		}
-		total += combination
-		if total > limit {
-			return limit + 1
-		}
-	}
-	return total
 }
 
 func MatchesValidTime(rules []ValidTimeRule, at time.Time) bool {
