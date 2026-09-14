@@ -18,19 +18,20 @@ import (
 )
 
 type offerRequest struct {
-	ExternalID   string                    `json:"externalId"`
-	Source       string                    `json:"source"`
-	Title        string                    `json:"title"`
-	Price        domain.Money              `json:"price"`
-	PurchaseURL  string                    `json:"purchaseUrl"`
-	City         string                    `json:"city"`
-	StoreCodes   []string                  `json:"storeCodes"`
-	OrderModes   []domain.OrderMode        `json:"orderModes"`
-	ValidFrom    *time.Time                `json:"validFrom"`
-	ValidUntil   *time.Time                `json:"validUntil"`
-	ValidTimes   []appoffers.ValidTimeRule `json:"validTimes"`
-	ChoiceGroups []appoffers.ChoiceGroup   `json:"choiceGroups"`
-	Components   []appoffers.Component     `json:"components"`
+	ExternalID      string                     `json:"externalId"`
+	ProductBindings []appoffers.ProductBinding `json:"productBindings"`
+	Source          string                     `json:"source"`
+	Title           string                     `json:"title"`
+	Price           domain.Money               `json:"price"`
+	PurchaseURL     string                     `json:"purchaseUrl"`
+	City            string                     `json:"city"`
+	StoreCodes      []string                   `json:"storeCodes"`
+	OrderModes      []domain.OrderMode         `json:"orderModes"`
+	ValidFrom       *time.Time                 `json:"validFrom"`
+	ValidUntil      *time.Time                 `json:"validUntil"`
+	ValidTimes      []appoffers.ValidTimeRule  `json:"validTimes"`
+	ChoiceGroups    []appoffers.ChoiceGroup    `json:"choiceGroups"`
+	Components      []appoffers.Component      `json:"components"`
 }
 
 func (r offerRequest) command() appoffers.CreateCommand {
@@ -70,6 +71,9 @@ func (h *Handler) createOffer(w http.ResponseWriter, r *http.Request) {
 		writeRequestError(w, err)
 		return
 	}
+	if h.ingestOffer(w, r, "", request) {
+		return
+	}
 	offer, err := h.offers.Create(r.Context(), request.command())
 	if err != nil {
 		h.writeOfferError(w, "create offer", err)
@@ -82,6 +86,9 @@ func (h *Handler) updateOfferDraft(w http.ResponseWriter, r *http.Request) {
 	var request offerRequest
 	if err := decodeJSON(w, r, &request); err != nil {
 		writeRequestError(w, err)
+		return
+	}
+	if h.ingestOffer(w, r, r.PathValue("offerId"), request) {
 		return
 	}
 	offer, err := h.offers.UpdateDraft(r.Context(), r.PathValue("offerId"), request.command())
@@ -132,6 +139,8 @@ func (h *Handler) writeOfferError(w http.ResponseWriter, operation string, err e
 	switch {
 	case errors.Is(err, appoffers.ErrOfferConflict):
 		writeError(w, http.StatusConflict, "offer_conflict", err.Error())
+	case errors.Is(err, appoffers.ErrIdempotencyConflict):
+		writeError(w, http.StatusConflict, "idempotency_conflict", err.Error())
 	case errors.Is(err, appoffers.ErrOfferNotFound):
 		writeError(w, http.StatusNotFound, "offer_not_found", err.Error())
 	case errors.Is(err, appoffers.ErrInvalidOffer):
@@ -230,4 +239,36 @@ func optionalTime(value string) (*time.Time, error) {
 		return nil, err
 	}
 	return &parsed, nil
+}
+
+// An ingestion request returns both the draft and product resolution details.
+// Plain legacy requests retain their original Offer response shape.
+func (h *Handler) ingestOffer(w http.ResponseWriter, r *http.Request, id string, request offerRequest) bool {
+	keys := r.Header.Values("Idempotency-Key")
+	if request.ProductBindings == nil && len(keys) == 0 {
+		return false
+	}
+	if len(keys) > 1 || (len(keys) == 1 && strings.TrimSpace(keys[0]) == "") {
+		writeError(w, http.StatusBadRequest, "invalid_offer", "supply one nonempty Idempotency-Key")
+		return true
+	}
+	usecase, ok := h.offers.(interface {
+		Ingest(context.Context, string, appoffers.CreateCommand, []appoffers.ProductBinding, string) (*appoffers.IngestionResult, error)
+	})
+	if !ok {
+		writeError(w, http.StatusBadRequest, "invalid_offer", "aggregate ingestion is not configured")
+		return true
+	}
+	result, err := usecase.Ingest(r.Context(), id, request.command(), request.ProductBindings, r.Header.Get("Idempotency-Key"))
+	if err != nil {
+		h.writeOfferError(w, "ingest offer", err)
+		return true
+	}
+	status := http.StatusOK
+	if id == "" {
+		status = http.StatusCreated
+	}
+	w.Header().Set("Location", "/v1/admin/offers")
+	writeJSON(w, status, result)
+	return true
 }
