@@ -1,0 +1,19 @@
+{
+  "source": "meituan",
+  "externalId": "example-four-choose-two",
+  "title": "主食小食4选2",
+  "price": {"amount": 2290, "currency": "CNY"},
+  "choiceGroups": [{"id": "221458923456789010", "name": "任选2次", "minSelect": 2, "maxSelect": 2, "allowRepeat": true}],
+  "components": [
+    {"quantity": 1, "choiceGroupId": "221458923456789010", "maxRepeat": 1, "exclusiveKey": "fries"},
+    {"quantity": 1, "choiceGroupId": "221458923456789010", "extraPrice": 200, "extraPriceMode": "per_selection", "exclusiveKey": "fries"},
+    {"quantity": 1, "choiceGroupId": "221458923456789010"},
+    {"quantity": 1, "choiceGroupId": "221458923456789010", "extraPrice": 100, "extraPriceMode": "per_unit"}
+  ],
+  "productBindings": [
+    {"componentIndex": 0, "product": {"brand": "mcd", "name": "薯条", "specification": "中份", "category": "小食"}},
+    {"componentIndex": 1, "product": {"brand": "mcd", "name": "薯条", "specification": "大份", "category": "小食"}},
+    {"componentIndex": 2, "product": {"brand": "mcd", "name": "汉堡包", "specification": "标准份", "category": "汉堡"}},
+    {"componentIndex": 3, "product": {"brand": "mcd", "name": "吉士汉堡包", "specification": "标准份", "category": "汉堡"}}
+  ]
+}

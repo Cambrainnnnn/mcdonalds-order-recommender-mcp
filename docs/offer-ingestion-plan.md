@@ -1,5 +1,41 @@
 # Screenshot offer ingestion implementation
 
+## 当前恢复入口（2026-09-14）
+
+以下状态优先于下方的历史检查点。用户已提供并授权本仓库 Git 身份：
+`quinlan <quinlan1995@gmail.com>`，已设置 local config；提交阻塞解除。
+本地 PostgreSQL 仍在 127.0.0.1:55432 运行。
+
+提交安排：环境 → 共享选择规则 → 业务身份与数据库约束 → 聚合事务与持久化幂等 → HTTP → 使用文档。
+持久化幂等与聚合事务共用原子边界，合并在第四个提交验证。
+每个候选提交通过 index 导出到 `.build/commit-check/` 单独测试，保留主工作区全部实现；
+测试通过后才提交。恢复时以 `git log` 和本节状态为准，不要重置主工作区。
+
+- [已提交 2c1457c] 1. 环境脚本与基线：index 独立导出的完整测试（含 PostgreSQL）和 vet 均通过。
+- [已提交 1a8f023] 2. 共享选择与计价规则：独立候选提交完整测试（含 PostgreSQL）通过。
+- [已提交 009b965] 3. 套餐业务防重与迁移：完整测试（含 PostgreSQL）通过；HTTP externalId 与 409 映射补验通过。历史回填测试独立到 offer_identity_test.go。
+- [已提交 0c5c9f0] 4. 单品/套餐原子保存与持久化幂等：独立候选完整 race 测试通过，含 PostgreSQL 多连接并发、回滚及发布后计价。
+- [已提交 544d657] 5. HTTP 聚合录入及回归测试：独立候选 HTTP race 测试和全量 vet 通过。
+- [完成，随本文提交] 6. 工作流程、示例与最终验证：完整 race 回归（含 PostgreSQL）及 vet 均通过；示例 JSON、脚本语法和 diff 检查通过。提交标题：`docs: document screenshot offer ingestion and recovery`。
+
+### 恢复结论
+
+本轮实现与六步提交任务均已完成，无待实现项或身份阻塞。
+最新文档：[录入 API 与 agent 工作流程](offer-ingestion-api.md)；
+示例：`data/examples/offer-ingestion.json`。后续继续开发时先查看 `git status` / `git log`，
+不要按历史章节重新实现或重装依赖。测试命令：
+
+```bash
+APP_TEST_DATABASE_URL='postgres://meal_test@127.0.0.1:55432/postgres?sslmode=disable' \
+  scripts/go.sh test -race -ldflags=-linkmode=external ./...
+scripts/go.sh vet ./...
+```
+
+
+## 历史执行记录
+
+以下内容保留历史事实，最新状态以上方恢复入口为准。
+
 Implementation tasks (commit boundaries and current status are recorded below):
 
 1. Reproducible local Go environment and baseline tests.
@@ -143,22 +179,3 @@ APP_TEST_DATABASE_URL='postgres://meal_test@127.0.0.1:55432/postgres?sslmode=dis
 - `scripts/go.sh vet ./...`、`git diff --check` 和安装脚本语法检查：通过。
 - 测试夹具已改用唯一 ID，避免依赖旧内存仓储覆盖相同 ID 的行为。
 - 功能实现、示例及文档完成；仍未创建 commit，仅待用户提供提交身份后按小任务拆分提交。
-
-
-## 当前恢复入口（2026-09-14）
-
-以下状态优先于上面的历史检查点。用户已提供并授权本仓库 Git 身份：
-`quinlan <quinlan1995@gmail.com>`，已设置 local config；提交阻塞解除。
-本地 PostgreSQL 仍在 127.0.0.1:55432 运行。
-
-提交安排：环境 → 共享选择规则 → 业务身份与数据库约束 → 聚合事务与持久化幂等 → HTTP → 使用文档。
-持久化幂等与聚合事务共用原子边界，合并在第四个提交验证。
-每个候选提交通过 index 导出到 `.build/commit-check/` 单独测试，保留主工作区全部实现；
-测试通过后才提交。恢复时以 `git log` 和本节状态为准，不要重置主工作区。
-
-- [已提交 2c1457c] 1. 环境脚本与基线：index 独立导出的完整测试（含 PostgreSQL）和 vet 均通过。
-- [已提交 1a8f023] 2. 共享选择与计价规则：独立候选提交完整测试（含 PostgreSQL）通过。
-- [已提交 009b965] 3. 套餐业务防重与迁移：完整测试（含 PostgreSQL）通过；HTTP externalId 与 409 映射补验通过。历史回填测试独立到 offer_identity_test.go。
-- [已提交 0c5c9f0] 4. 单品/套餐原子保存与持久化幂等：独立候选完整 race 测试通过，含 PostgreSQL 多连接并发、回滚及发布后计价。
-- [验证通过，准备提交] 5. HTTP 聚合录入及回归测试：独立候选 HTTP race 测试和全量 vet 通过。
-- [待提交] 6. 工作流程、示例与最终验证。

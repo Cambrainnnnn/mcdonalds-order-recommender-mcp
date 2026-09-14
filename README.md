@@ -258,6 +258,20 @@ MCP 暴露以下只读目录查询和推荐会话工具，不暴露套餐发布�
 
 ### 本地运行
 
+缺少工具链时可使用项目本地安装，不修改系统 Go：
+
+```bash
+scripts/install-go.sh
+scripts/go.sh mod download
+scripts/go.sh test ./...
+# 可选：安装 Linux x86_64 C 编译器并执行竞态检查
+scripts/install-c-compiler.sh
+scripts/go.sh test -race -ldflags=-linkmode=external ./...
+```
+
+真实数据库测试需设置 `APP_TEST_DATABASE_URL`，未设置时相应测试跳过。
+本地工具链和 Go 缓存保存在忽略的 `.build/` 下。
+
 ```bash
 make check
 make run
@@ -329,7 +343,7 @@ curl -X POST http://localhost:8080/v1/recommendation-sessions/{sessionId}/recomm
 
 | 字段 | 含义 |
 | --- | --- |
-| `id` | 默认生成 `prod_` 前缀的 ID，创建后不可修改；创建时可指定旧 ID 以补录历史单品 |
+| `id` | 服务端生成的正数十进制雪花字符串，创建后不可修改；创建时不能指定 ID |
 | `brand` | 必填，品牌代码，例如 `mcd`；去除首尾空格并转小写，最多 64 字符 |
 | `name` | 必填，标准名称，例如“薯条”，最多 200 字符 |
 | `specification` | 必填，规格，例如“中份”“大份”“5块”“标准份”，最多 100 字符 |
@@ -392,7 +406,7 @@ curl -X POST http://localhost:8080/v1/admin/products \
 
 ```json
 {
-  "canonicalProductId": "prod_替换为新增单品返回的ID",
+  "canonicalProductId": "替换为新增单品返回的雪花ID",
   "quantity": 1
 }
 ```
@@ -409,7 +423,7 @@ curl --get 'http://localhost:8080/v1/admin/products' \
 
 套餐创建、草稿修改、CSV 导入、复核、发布及再核验只校验组成单品存在且包含 `offer_component` 销售范围，失败返回 `invalid_offer`（CSV 导入按行报告）。单品的 `active`/`disabled` 状态与套餐生命周期相互独立：停用单品不会影响已有套餐，也不会阻止包含它的套餐被创建、修改、复核、发布或再核验。
 
-历史 `manual:mcd:*` 套餐保持可查询；在修改、复核或发布前，可通过新增接口指定相同 `id` 并补齐餐品信息，例如 `"id":"manual:mcd:fries_medium"`。自定义 ID 限 1–128 个字母、数字、冒号、下划线或连字符，以字母或数字开头，统一为小写；普通新增建议省略 `id`。补录前需确认名称与规格，服务不会根据旧 ID 自动猜测餐品资料。
+历史非雪花 ID 由数据库 migration 迁移，并同步单品及套餐引用。新增单品不能指定旧 ID，必须使用服务端返回的雪花 ID。名称或规格不明确时须先确认，服务不会根据历史 ID 自动猜测资料。
 
 单品接口错误：参数不合法 400（`invalid_product`）、未找到 404（`product_not_found`）、ID 或名称规格重复 409（`product_conflict`）。配置数据库时使用 PostgreSQL 并自动创建 `products` 表；否则使用内存存储，重启丢失。
 
@@ -419,6 +433,13 @@ curl --get 'http://localhost:8080/v1/admin/products' \
 go test -race ./...
 APP_TEST_DATABASE_URL='postgres://meal:meal_dev_password@localhost:5432/meal_recommendation?sslmode=disable' go test ./internal/application/products -v
 ```
+
+### 截图套餐录入
+
+支持精确 N 选、重复选择上限、规格互斥、按次/按份加价、套餐防重和请求幂等。
+Agent 可通过原有套餐 JSON API 显式提供缺失单品资料，服务在同一事务中精确复用或补建单品并保存草稿。
+完整请求、响应、错误和兼容规则见 [截图套餐录入说明](docs/offer-ingestion-api.md)，
+可运行示例见 [offer-ingestion.json](data/examples/offer-ingestion.json)。
 
 ### 运营套餐 API
 
@@ -459,7 +480,7 @@ curl -X POST http://localhost:8080/v1/admin/offers \
   }'
 ```
 
-`choiceGroups` 定义选择规则；精确“m 中选 n”时将 `minSelect`、`maxSelect` 都设为 `n`。`components` 中没有 `choiceGroupId` 的是固定项，有该字段的是对应组的可选项。`extraPrice` 使用最小货币单位，并只在该项被选中时叠加到套餐基础 `price`；不同规格应作为不同标准单品录入，再分别设置加价。一次选择不能重复选择同一个组件。单套餐最多展开 10,000 种合法组合，超过时创建或修改会被拒绝。
+`choiceGroups` 定义选择规则；精确“m 中选 n”时将 `minSelect`、`maxSelect` 都设为 `n`。`components` 中没有 `choiceGroupId` 的是固定项，有该字段的是对应组的可选项。`extraPrice` 使用最小货币单位，并只在该项被选中时叠加到套餐基础 `price`；不同规格应作为不同标准单品录入，再分别设置加价。默认不能重复选择同一个组件；设置 `allowRepeat` 可启用重复，具体限制见截图套餐录入说明。单套餐最多展开 10,000 种合法组合，超过时创建或修改会被拒绝。
 
 兼容旧数据：没有 `choiceGroups` 的历史套餐仍把所有组成项视为固定项，也不会开始收取历史上未生效的分组项 `extraPrice`；需要启用选择与加价时，应补录完整的选择组规则。
 
