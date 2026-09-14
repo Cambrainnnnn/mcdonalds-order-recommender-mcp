@@ -2,8 +2,9 @@
 
 ## 当前恢复入口（2026-09-14）
 
-以下状态优先于下方的历史检查点。用户已提供并授权本仓库 Git 身份：
-`quinlan <quinlan1995@gmail.com>`，已设置 local config；提交阻塞解除。
+以下状态优先于下方的历史检查点。本仓库最新 Git 身份已按用户更正设置为：
+`quinlan <quinlanwong1995@gmail.com>`（local config）。
+下列六个实现提交使用用户此前提供的 `quinlan <quinlan1995@gmail.com>`；已有提交历史尚未改写。
 本地 PostgreSQL 仍在 127.0.0.1:55432 运行。
 
 提交安排：环境 → 共享选择规则 → 业务身份与数据库约束 → 聚合事务与持久化幂等 → HTTP → 使用文档。
