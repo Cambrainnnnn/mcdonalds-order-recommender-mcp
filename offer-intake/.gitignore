@@ -1,0 +1,7 @@
+# 真实截图和识别结果保留在本地；Schema、提示词和示例随 Git 管理。
+images/*
+!images/.gitkeep
+outputs/*
+!outputs/.gitkeep
+.venv/
+__pycache__/

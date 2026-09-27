@@ -1,0 +1,108 @@
+{
+  "progressVersion": "1.0",
+  "promptVersion": "1.1",
+  "schemaVersion": "1.0",
+  "captureId": "capture-001",
+  "status": "in_progress",
+  "manifestPath": "outputs/capture-001/capture.json",
+  "manifestFingerprint": "capture-001|3|img_001,img_002,img_003",
+  "model": "deepseek-flash",
+  "startedAt": "2026-09-27T11:30:00+08:00",
+  "lastUpdatedAt": "2026-09-27T11:36:42+08:00",
+  "images": [
+    {
+      "imageId": "img_001",
+      "path": "images/capture-001/01-detail.png",
+      "state": "done",
+      "attempts": 1,
+      "offerLocalIds": ["offer_1"],
+      "note": null
+    },
+    {
+      "imageId": "img_002",
+      "path": "images/capture-001/02-options.png",
+      "state": "pending",
+      "attempts": 0,
+      "offerLocalIds": [],
+      "note": null
+    },
+    {
+      "imageId": "img_003",
+      "path": "images/capture-001/03-rules.png",
+      "state": "pending",
+      "attempts": 0,
+      "offerLocalIds": [],
+      "note": null
+    }
+  ],
+  "nextImageIds": ["img_002", "img_003"],
+  "offers": [
+    {
+      "localId": "offer_1",
+      "imageIds": ["img_001"],
+      "titleRaw": "到店取餐套餐示例",
+      "externalIdRaw": null,
+      "prices": [
+        {
+          "amount": 1990,
+          "currency": "CNY",
+          "kind": "sale",
+          "conditionsRaw": null
+        }
+      ],
+      "components": [
+        {
+          "localId": "item_1",
+          "nameRaw": "中薯",
+          "specificationRaw": null,
+          "quantity": 1,
+          "selectionKind": "fixed",
+          "choiceGroupId": null,
+          "extraPrice": null,
+          "extraPriceMode": null,
+          "maxRepeat": null,
+          "exclusiveKey": null
+        }
+      ],
+      "choiceGroups": [],
+      "rules": {
+        "validityRaw": null,
+        "availableTimesRaw": null,
+        "orderModesRaw": null,
+        "applicableStoresRaw": null,
+        "eligibilityRaw": null,
+        "otherRulesRaw": []
+      },
+      "completeness": {
+        "prices": "complete",
+        "components": "partial",
+        "choiceGroups": "not_shown",
+        "rules": "not_shown"
+      },
+      "evidence": [
+        {
+          "path": "/offers/0/titleRaw",
+          "imageId": "img_001",
+          "text": "到店取餐套餐示例"
+        },
+        {
+          "path": "/offers/0/prices/0",
+          "imageId": "img_001",
+          "text": "19.90"
+        }
+      ],
+      "issues": [
+        {
+          "path": "/offers/0/components",
+          "code": "incomplete",
+          "message": "组成只识别到部分单品，选项图与规则图尚未处理。",
+          "imageIds": ["img_001"]
+        }
+      ]
+    }
+  ],
+  "offerDraft": null,
+  "revisions": [],
+  "openQuestions": [],
+  "finalOutput": null
+}

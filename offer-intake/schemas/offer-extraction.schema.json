@@ -1,0 +1,482 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "套餐截图提取结果 v1.0",
+  "description": "识别中间格式，不是套餐导入 API 载荷。引用、事实完整性和业务可用性需另行检查。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "captureId",
+    "imageIds",
+    "offers",
+    "issues"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0"
+    },
+    "captureId": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1
+    },
+    "imageIds": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "offers": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/offer"
+      }
+    },
+    "issues": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/issue"
+      }
+    }
+  },
+  "$defs": {
+    "offer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "localId",
+        "imageIds",
+        "titleRaw",
+        "externalIdRaw",
+        "prices",
+        "components",
+        "choiceGroups",
+        "rules",
+        "completeness",
+        "evidence",
+        "issues"
+      ],
+      "properties": {
+        "localId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "imageIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "titleRaw": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "externalIdRaw": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "prices": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/price"
+          }
+        },
+        "components": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/component"
+          }
+        },
+        "choiceGroups": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/choiceGroup"
+          }
+        },
+        "rules": {
+          "$ref": "#/$defs/rules"
+        },
+        "completeness": {
+          "$ref": "#/$defs/completeness"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/evidence"
+          }
+        },
+        "issues": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/issue"
+          }
+        }
+      }
+    },
+    "price": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "amount",
+        "currency",
+        "kind",
+        "conditionsRaw"
+      ],
+      "properties": {
+        "amount": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "description": "最小货币单位整数；CNY 为分。未知为 null，不是 0。"
+        },
+        "currency": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "kind": {
+          "enum": [
+            "sale",
+            "original",
+            "after_coupon",
+            "starting_from",
+            "unknown"
+          ]
+        },
+        "conditionsRaw": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        }
+      }
+    },
+    "component": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "localId",
+        "nameRaw",
+        "specificationRaw",
+        "quantity",
+        "selectionKind",
+        "choiceGroupId",
+        "extraPrice",
+        "extraPriceMode",
+        "maxRepeat",
+        "exclusiveKey"
+      ],
+      "properties": {
+        "localId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "nameRaw": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "specificationRaw": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "quantity": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1,
+          "description": "固定项份数，或选中此选项一次获得的份数；5块鸡块两份为规格5块、数量2。"
+        },
+        "selectionKind": {
+          "enum": [
+            "fixed",
+            "choice",
+            "unknown"
+          ]
+        },
+        "choiceGroupId": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "extraPrice": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "extraPriceMode": {
+          "enum": [
+            "per_selection",
+            "per_unit",
+            null
+          ]
+        },
+        "maxRepeat": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "exclusiveKey": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1,
+          "description": "仅明确的同组规格互斥使用相同本地键，不能凭规格不同推测互斥。"
+        }
+      }
+    },
+    "choiceGroup": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "localId",
+        "nameRaw",
+        "minSelect",
+        "maxSelect",
+        "allowRepeat",
+        "optionsComplete",
+        "rulesRaw"
+      ],
+      "properties": {
+        "localId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "nameRaw": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "minSelect": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "maxSelect": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "allowRepeat": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "optionsComplete": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "rulesRaw": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        }
+      }
+    },
+    "rules": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "validityRaw",
+        "availableTimesRaw",
+        "orderModesRaw",
+        "applicableStoresRaw",
+        "eligibilityRaw",
+        "otherRulesRaw"
+      ],
+      "properties": {
+        "validityRaw": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "availableTimesRaw": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "orderModesRaw": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "applicableStoresRaw": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "eligibilityRaw": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "otherRulesRaw": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "completeness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "prices",
+        "components",
+        "choiceGroups",
+        "rules"
+      ],
+      "properties": {
+        "prices": {
+          "enum": [
+            "complete",
+            "partial",
+            "not_shown",
+            "unknown"
+          ]
+        },
+        "components": {
+          "enum": [
+            "complete",
+            "partial",
+            "not_shown",
+            "unknown"
+          ]
+        },
+        "choiceGroups": {
+          "enum": [
+            "complete",
+            "partial",
+            "not_shown",
+            "unknown"
+          ]
+        },
+        "rules": {
+          "enum": [
+            "complete",
+            "partial",
+            "not_shown",
+            "unknown"
+          ]
+        }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "imageId",
+        "text"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "imageId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "issue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "code",
+        "message",
+        "imageIds"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "相对于整个输出 JSON 的 JSON Pointer；根对象用空字符串。"
+        },
+        "code": {
+          "enum": [
+            "not_shown",
+            "unreadable",
+            "ambiguous",
+            "conflict",
+            "incomplete",
+            "unsupported_rule",
+            "no_offer"
+          ]
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        },
+        "imageIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        }
+      }
+    }
+  }
+}

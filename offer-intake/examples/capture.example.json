@@ -1,0 +1,21 @@
+{
+  "captureId": "capture-001",
+  "source": null,
+  "brand": "mcd",
+  "purchaseUrl": null,
+  "externalId": null,
+  "capturedAt": null,
+  "images": [
+    {
+      "imageId": "img_001",
+      "path": "images/capture-001/01-detail.png",
+      "sha256": null
+    }
+  ],
+  "extraction": {
+    "model": null,
+    "promptVersion": "1.1",
+    "schemaVersion": "1.0",
+    "outputPath": "outputs/capture-001/extraction.v1.json"
+  }
+}

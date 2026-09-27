@@ -1,0 +1,114 @@
+{
+  "schemaVersion": "1.0",
+  "captureId": "capture-001",
+  "imageIds": [
+    "img_001"
+  ],
+  "offers": [
+    {
+      "localId": "offer_1",
+      "imageIds": [
+        "img_001"
+      ],
+      "titleRaw": "饮料二选一",
+      "externalIdRaw": null,
+      "prices": [
+        {
+          "amount": 990,
+          "currency": "CNY",
+          "kind": "sale",
+          "conditionsRaw": null
+        }
+      ],
+      "components": [
+        {
+          "localId": "item_1",
+          "nameRaw": "可口可乐",
+          "specificationRaw": "中杯",
+          "quantity": 1,
+          "selectionKind": "choice",
+          "choiceGroupId": "group_1",
+          "extraPrice": 0,
+          "extraPriceMode": null,
+          "maxRepeat": null,
+          "exclusiveKey": null
+        },
+        {
+          "localId": "item_2",
+          "nameRaw": "拿铁",
+          "specificationRaw": "中杯",
+          "quantity": 1,
+          "selectionKind": "choice",
+          "choiceGroupId": "group_1",
+          "extraPrice": 300,
+          "extraPriceMode": "per_selection",
+          "maxRepeat": null,
+          "exclusiveKey": null
+        }
+      ],
+      "choiceGroups": [
+        {
+          "localId": "group_1",
+          "nameRaw": "饮料二选一",
+          "minSelect": 1,
+          "maxSelect": 1,
+          "allowRepeat": null,
+          "optionsComplete": true,
+          "rulesRaw": "饮料二选一：可口可乐（中杯）1杯，无需加价；拿铁（中杯）1杯，每次选择加3元"
+        }
+      ],
+      "rules": {
+        "validityRaw": null,
+        "availableTimesRaw": null,
+        "orderModesRaw": null,
+        "applicableStoresRaw": null,
+        "eligibilityRaw": null,
+        "otherRulesRaw": []
+      },
+      "completeness": {
+        "prices": "complete",
+        "components": "complete",
+        "choiceGroups": "complete",
+        "rules": "not_shown"
+      },
+      "evidence": [
+        {
+          "path": "/offers/0/titleRaw",
+          "imageId": "img_001",
+          "text": "饮料二选一"
+        },
+        {
+          "path": "/offers/0/prices/0",
+          "imageId": "img_001",
+          "text": "售价 人民币9.90元"
+        },
+        {
+          "path": "/offers/0/components/0",
+          "imageId": "img_001",
+          "text": "可口可乐（中杯）1杯，无需加价"
+        },
+        {
+          "path": "/offers/0/components/1",
+          "imageId": "img_001",
+          "text": "拿铁（中杯）1杯，每次选择加3元"
+        },
+        {
+          "path": "/offers/0/choiceGroups/0",
+          "imageId": "img_001",
+          "text": "饮料二选一：可口可乐（中杯）1杯，无需加价；拿铁（中杯）1杯，每次选择加3元"
+        }
+      ],
+      "issues": [
+        {
+          "path": "/offers/0/rules",
+          "code": "not_shown",
+          "message": "使用规则未展示，不能视为没有限制。",
+          "imageIds": [
+            "img_001"
+          ]
+        }
+      ]
+    }
+  ],
+  "issues": []
+}
