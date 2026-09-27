@@ -4,12 +4,15 @@ COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/mcp-http ./cmd/mcp-http
+RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/catalog ./cmd/catalog
 
 FROM alpine:3.20
 RUN apk add --no-cache ca-certificates \
     && addgroup -S app \
     && adduser -S -G app app
 COPY --from=builder /out/mcp-http /usr/local/bin/mcp-http
+COPY --from=builder /out/catalog /usr/local/bin/catalog
+COPY data/ /app/data/
 USER app
 EXPOSE 8080
 ENTRYPOINT ["/usr/local/bin/mcp-http"]

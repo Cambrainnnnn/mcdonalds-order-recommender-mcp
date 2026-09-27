@@ -50,7 +50,7 @@ func run(ctx context.Context, logger *slog.Logger) error {
 	if err := validateConfig(cfg, token); err != nil {
 		return err
 	}
-	startupContext, startupCancel := context.WithTimeout(ctx, cfg.ExternalTimeout)
+	startupContext, startupCancel := context.WithTimeout(ctx, cfg.StartupTimeout)
 	runtime, err := bootstrap.New(startupContext, cfg, logger)
 	startupCancel()
 	if err != nil {

@@ -1,4 +1,7 @@
-.PHONY: run run-mcp run-mcp-http test vet fmt check
+.PHONY: run run-mcp run-mcp-http catalog-export test vet fmt check
+
+catalog-export:
+	go run ./cmd/catalog -output data/catalog.json
 
 run:
 	go run ./cmd/api

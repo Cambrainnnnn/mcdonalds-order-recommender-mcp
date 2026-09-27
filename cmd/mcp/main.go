@@ -27,7 +27,7 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	startupContext, startupCancel := context.WithTimeout(ctx, cfg.ExternalTimeout)
+	startupContext, startupCancel := context.WithTimeout(ctx, cfg.StartupTimeout)
 	runtime, err := bootstrap.New(startupContext, cfg, logger)
 	startupCancel()
 	if err != nil {

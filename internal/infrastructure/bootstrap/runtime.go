@@ -34,6 +34,10 @@ type Runtime struct {
 }
 
 func New(ctx context.Context, cfg config.Config, logger *slog.Logger) (*Runtime, error) {
+	seedEnabled := cfg.CatalogSeedMode != "" && cfg.CatalogSeedMode != "off"
+	if seedEnabled && cfg.DatabaseURL == "" {
+		return nil, fmt.Errorf("catalog seeding requires APP_DATABASE_URL or DATABASE_URL")
+	}
 	if logger == nil {
 		logger = slog.Default()
 	}
@@ -60,6 +64,19 @@ func New(ctx context.Context, cfg config.Config, logger *slog.Logger) (*Runtime,
 		if err := postgres.Migrate(ctx, database); err != nil {
 			database.Close()
 			return nil, fmt.Errorf("migrate database: %w", err)
+		}
+		if seedEnabled {
+			catalog, err := postgres.ReadCatalog(cfg.CatalogSeedPath)
+			if err != nil {
+				database.Close()
+				return nil, fmt.Errorf("read catalog seed: %w", err)
+			}
+			loaded, err := postgres.ImportCatalog(ctx, database, catalog, cfg.CatalogSeedMode)
+			if err != nil {
+				database.Close()
+				return nil, fmt.Errorf("import catalog seed: %w", err)
+			}
+			logger.Info("catalog seed completed", "mode", cfg.CatalogSeedMode, "loaded", loaded, "products", len(catalog.Products), "offers", len(catalog.Offers), "versions", len(catalog.Versions))
 		}
 		offers = postgres.NewOfferRepository(database, time.Now, cfg.OfferStaleAfter, cfg.CacheTTL, cfg.CacheStaleTTL)
 		products = postgres.NewProductRepository(database)

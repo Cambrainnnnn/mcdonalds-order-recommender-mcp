@@ -12,14 +12,16 @@
    | --- | --- |
    | `DATABASE_URL` | `${{Postgres.DATABASE_URL}}`（按实际数据库服务名调整） |
    | `APP_MCP_TOKEN` | 本地运行 `openssl rand -hex 32` 生成的随机密钥 |
-   | `APP_EXTERNAL_TIMEOUT` | `60s`（首次数据库连接和 migration 的总超时） |
+   | `APP_STARTUP_TIMEOUT` | `60s`（数据库连接、migration 和目录导入的总超时） |
+   | `APP_CATALOG_SEED_PATH` | `/app/data/catalog.json`（启用目录导入时设置） |
+   | `APP_CATALOG_SEED_MODE` | `if-empty`（首次初始化）；持续同步 Git 快照使用 `merge`；默认 `off` |
 
 4. 部署应用，在 Networking 中 Generate Domain。Railway 提供 HTTPS，应用自动监听 `PORT`。不要配置只监听 localhost 的 `APP_HTTP_ADDRESS`。
 5. 检查 `https://<你的域名>/healthz` 返回 200。日志应包含 PostgreSQL 初始化成功与 MCP HTTP 启动信息。
 
 应用启动时自动执行数据库 migration。缺少数据库 URL、缺少 Token 或数据库初始化失败都会终止启动，避免生产意外使用内存目录。`APP_DATABASE_URL` 优先于 `DATABASE_URL`；`APP_HTTP_ADDRESS` 优先于 `PORT`，最后默认 `:8080`。`APP_MCP_TOKEN` 与历史的 `APP_MCD_MCP_TOKEN` 是不同配置。
 
-数据库保存商品和套餐；新数据库只有表结构，没有自动导入业务数据。若需迁移已有目录，应先备份，再将数据导入 Railway PostgreSQL。运营维护可在本机用 `cmd/api` 连接数据库的公网连接地址（仅监听 `127.0.0.1`）；生产 MCP 镜像不提供运营写接口。不要将原有无鉴权 REST API 暴露到公网。
+数据库保存商品和套餐；默认只创建表结构。可以先在本地导出 `data/catalog.json` 并提交 Git，再通过上面的环境变量在 Railway 启动时导入。`if-empty` 不更新已有目录；后续随 Git 更新使用 `merge`，冲突会使启动失败并回滚导入，详见 [目录快照维护](catalog-snapshot.md)。运营维护可在本机用 `cmd/api` 连接数据库的公网连接地址（仅监听 `127.0.0.1`）；生产 MCP 镜像不提供运营写接口。不要将原有无鉴权 REST API 暴露到公网。
 
 推荐会话仍在应用内存中。保持单实例，关闭 Railway Serverless 自动休眠；重启或重新部署后客户端需要重新调用 `start_recommendation_session`。`/healthz` 是启动后的存活检查，并非持续数据库可用性检查。
 

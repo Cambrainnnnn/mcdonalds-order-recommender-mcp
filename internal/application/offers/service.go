@@ -338,6 +338,14 @@ func (s *Service) validateProducts(ctx context.Context, offer *Offer) error {
 	return nil
 }
 
+// ValidateSnapshot checks catalog data without changing the original historical payload.
+func ValidateSnapshot(offer *Offer) error {
+	copy := *offer
+	copy.Components = slices.Clone(offer.Components)
+	copy.ChoiceGroups = slices.Clone(offer.ChoiceGroups)
+	return validateOffer(&copy)
+}
+
 func validateOffer(offer *Offer) error {
 	offer.Price.Currency = strings.ToUpper(strings.TrimSpace(offer.Price.Currency))
 	for _, field := range []struct {

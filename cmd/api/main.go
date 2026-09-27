@@ -24,7 +24,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	startupContext, startupCancel := context.WithTimeout(context.Background(), cfg.ExternalTimeout)
+	startupContext, startupCancel := context.WithTimeout(context.Background(), cfg.StartupTimeout)
 	runtime, err := bootstrap.New(startupContext, cfg, logger)
 	startupCancel()
 	if err != nil {

@@ -9,6 +9,9 @@ import (
 )
 
 type Config struct {
+	CatalogSeedPath string
+	CatalogSeedMode string
+	StartupTimeout  time.Duration
 	HTTPAddress     string
 	SessionTTL      time.Duration
 	ShutdownTimeout time.Duration
@@ -23,6 +26,21 @@ type Config struct {
 }
 
 func Load() (Config, error) {
+	seedMode := strings.TrimSpace(os.Getenv("APP_CATALOG_SEED_MODE"))
+	if seedMode == "" {
+		seedMode = "off"
+	}
+	if seedMode != "off" && seedMode != "if-empty" && seedMode != "merge" {
+		return Config{}, fmt.Errorf("APP_CATALOG_SEED_MODE must be off, if-empty or merge")
+	}
+	seedPath := strings.TrimSpace(os.Getenv("APP_CATALOG_SEED_PATH"))
+	if seedMode != "off" && seedPath == "" {
+		return Config{}, fmt.Errorf("APP_CATALOG_SEED_PATH is required when catalog seeding is enabled")
+	}
+	startupTimeout, err := durationFromEnv("APP_STARTUP_TIMEOUT", 60*time.Second)
+	if err != nil {
+		return Config{}, err
+	}
 	sessionTTL, err := durationFromEnv("APP_SESSION_TTL", 30*time.Minute)
 	if err != nil {
 		return Config{}, err
@@ -76,6 +94,9 @@ func Load() (Config, error) {
 	}
 
 	return Config{
+		CatalogSeedPath: seedPath,
+		CatalogSeedMode: seedMode,
+		StartupTimeout:  startupTimeout,
 		HTTPAddress:     address,
 		SessionTTL:      sessionTTL,
 		ShutdownTimeout: shutdownTimeout,

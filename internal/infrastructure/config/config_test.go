@@ -2,6 +2,36 @@ package config
 
 import "testing"
 
+func TestCatalogSeedConfiguration(t *testing.T) {
+	t.Setenv("APP_CATALOG_SEED_MODE", "")
+	t.Setenv("APP_CATALOG_SEED_PATH", "")
+	t.Setenv("APP_STARTUP_TIMEOUT", "")
+	cfg, err := Load()
+	if err != nil || cfg.CatalogSeedMode != "off" || cfg.StartupTimeout.Seconds() != 60 {
+		t.Fatalf("defaults: %+v %v", cfg, err)
+	}
+	t.Setenv("APP_CATALOG_SEED_MODE", "merge")
+	if _, err := Load(); err == nil {
+		t.Fatal("accepted missing path")
+	}
+	t.Setenv("APP_CATALOG_SEED_PATH", "data/catalog.json")
+	for _, mode := range []string{"merge", "if-empty", "off"} {
+		t.Setenv("APP_CATALOG_SEED_MODE", mode)
+		if _, err := Load(); err != nil {
+			t.Fatal(err)
+		}
+	}
+	t.Setenv("APP_CATALOG_SEED_MODE", "replace")
+	if _, err := Load(); err == nil {
+		t.Fatal("accepted invalid mode")
+	}
+	t.Setenv("APP_CATALOG_SEED_MODE", "off")
+	t.Setenv("APP_STARTUP_TIMEOUT", "0s")
+	if _, err := Load(); err == nil {
+		t.Fatal("accepted zero startup timeout")
+	}
+}
+
 func TestRailwayEnvironment(t *testing.T) {
 	t.Setenv("APP_HTTP_ADDRESS", "")
 	t.Setenv("APP_DATABASE_URL", "")

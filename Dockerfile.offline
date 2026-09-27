@@ -2,6 +2,7 @@ FROM macdownloads-mcp-server-app:offline-base
 
 USER root
 COPY --chown=mealapp:mealapp --chmod=0755 .build/api /usr/local/bin/api
+COPY data/ /app/data/
 USER mealapp
 
 ENTRYPOINT ["/usr/local/bin/api"]

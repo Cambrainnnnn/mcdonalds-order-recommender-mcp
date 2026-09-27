@@ -6,6 +6,8 @@
 
 历史官方 MCP Adapter 保留供未来扩展，但当前 API/MCP 启动装配不启用它，即使设置 APP_MCD_MCP_TOKEN 也不会发起门店、菜单或算价请求。
 
+本地维护的商品和套餐可通过 `make catalog-export` 导出到 `data/catalog.json`，随 Git 管理。设置 `APP_CATALOG_SEED_MODE=if-empty` 或 `merge` 及 `APP_CATALOG_SEED_PATH` 后，服务启动时会在 migration 后加载快照；默认 `off`。完整操作见 [目录快照维护](docs/catalog-snapshot.md)。
+
 ## 架构
 
 ```text
@@ -293,6 +295,9 @@ make run
 - `APP_MCD_MCP_ENDPOINT`，默认 `https://mcp.mcd.cn`
 - `APP_MCD_MCP_TOKEN`，麦当劳 MCP Bearer Token；未来官方渠道扩展预留；当前推荐不使用
 - `APP_EXTERNAL_TIMEOUT`，默认 `12s`
+- `APP_STARTUP_TIMEOUT`，默认 `60s`，数据库连接、migration 与目录导入的总超时
+- `APP_CATALOG_SEED_MODE`，默认 `off`，可选 `if-empty` / `merge`
+- `APP_CATALOG_SEED_PATH`，启用导入时必填，Docker 镜像内使用 `/app/data/catalog.json`
 - `APP_CACHE_TTL`，默认 `2m`
 - `APP_CACHE_STALE_TTL`，默认 `30m`
 - `APP_OFFER_STALE_AFTER`，默认 `24h`
