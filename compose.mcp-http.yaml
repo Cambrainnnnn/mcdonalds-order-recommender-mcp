@@ -1,0 +1,8 @@
+# Optional local smoke test of the Railway image, without Hermes.
+# APP_MCP_TOKEN=$(openssl rand -hex 32) docker compose -f compose.yaml -f compose.mcp-http.yaml up --build
+services:
+  app:
+    build:
+      dockerfile: Dockerfile.mcp-http
+    environment:
+      APP_MCP_TOKEN: "${APP_MCP_TOKEN:?set APP_MCP_TOKEN}"

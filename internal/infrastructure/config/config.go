@@ -58,6 +58,17 @@ func Load() (Config, error) {
 	address := os.Getenv("APP_HTTP_ADDRESS")
 	if address == "" {
 		address = ":8080"
+		if port := os.Getenv("PORT"); port != "" {
+			parsed, err := strconv.Atoi(port)
+			if err != nil || parsed < 1 || parsed > 65535 {
+				return Config{}, fmt.Errorf("PORT must be an integer between 1 and 65535")
+			}
+			address = ":" + port
+		}
+	}
+	databaseURL := strings.TrimSpace(os.Getenv("APP_DATABASE_URL"))
+	if databaseURL == "" {
+		databaseURL = strings.TrimSpace(os.Getenv("DATABASE_URL"))
 	}
 	mcdEndpoint := os.Getenv("APP_MCD_MCP_ENDPOINT")
 	if mcdEndpoint == "" {
@@ -68,7 +79,7 @@ func Load() (Config, error) {
 		HTTPAddress:     address,
 		SessionTTL:      sessionTTL,
 		ShutdownTimeout: shutdownTimeout,
-		DatabaseURL:     strings.TrimSpace(os.Getenv("APP_DATABASE_URL")),
+		DatabaseURL:     databaseURL,
 		MCDMCPEndpoint:  mcdEndpoint,
 		MCDMCPToken:     strings.TrimSpace(os.Getenv("APP_MCD_MCP_TOKEN")),
 		ExternalTimeout: externalTimeout,

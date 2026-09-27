@@ -1,3 +1,4 @@
+# Optional local test agent only. Production uses railway.json and Dockerfile.mcp-http.
 services:
   postgres:
     image: postgres:16-alpine

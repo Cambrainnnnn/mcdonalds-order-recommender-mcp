@@ -161,6 +161,12 @@ HTTP 入站适配层，将 HTTP 请求转换为应用用例参数，并将应用
 
 要求 Go 1.25 或更高版本。
 
+### Railway 生产部署（远程 MCP）
+
+使用 `cmd/mcp-http` + Bearer Token + Railway PostgreSQL，部署和本地客户端连接步骤见 [Railway 部署文档](docs/railway.md)。`railway.json` 使用独立的 `Dockerfile.mcp-http`，只部署 MCP 服务；生产不需要 Hermes。远程地址为 `https://<域名>/mcp`，请求必须携带 `Authorization: Bearer <APP_MCP_TOKEN>`。
+
+推荐会话仍使用内存，当前部署为单实例，重启后需重新创建会话；商品和套餐保存到 PostgreSQL。
+
 ### Docker Compose（推荐用于测试）
 
 同时启动应用和 PostgreSQL：
@@ -191,7 +197,7 @@ export APP_MCD_MCP_TOKEN='your-token'
 docker compose up --build
 ```
 
-### Hermes + MCP 统一容器
+### Hermes + MCP 统一容器（仅测试，生产不需要）
 
 `cmd/mcp` 将推荐用例包装为 stdio MCP Server。`Dockerfile.hermes` 把该二进制放入 Hermes 官方镜像；Hermes 负责 MCP 子进程的生命周期，因此 MCP 不需要单独暴露端口。PostgreSQL 仍作为独立数据容器运行。
 
@@ -279,10 +285,11 @@ make run
 
 默认监听 `:8080`。可用环境变量：
 
-- `APP_HTTP_ADDRESS`，默认 `:8080`
+- `APP_HTTP_ADDRESS`，未设置时使用 `PORT`（Railway），最后默认 `:8080`
+- `APP_MCP_TOKEN`，远程 MCP 的 Bearer Token；`cmd/mcp-http` 必填
 - `APP_SESSION_TTL`，默认 `30m`
 - `APP_SHUTDOWN_TIMEOUT`，默认 `10s`
-- `APP_DATABASE_URL`，PostgreSQL DSN；未设置时使用内存套餐库
+- `APP_DATABASE_URL`，PostgreSQL DSN；回退到 `DATABASE_URL`（Railway）；两者均未设置时 API/stdio 使用内存套餐库，`cmd/mcp-http` 拒绝启动
 - `APP_MCD_MCP_ENDPOINT`，默认 `https://mcp.mcd.cn`
 - `APP_MCD_MCP_TOKEN`，麦当劳 MCP Bearer Token；未来官方渠道扩展预留；当前推荐不使用
 - `APP_EXTERNAL_TIMEOUT`，默认 `12s`
