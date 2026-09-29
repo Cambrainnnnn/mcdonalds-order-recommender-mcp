@@ -127,12 +127,12 @@ func TestOfferCatalogUsesReservationTimeAndDailyWindow(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	inside := time.Date(2026, time.September, 7, 11, 0, 0, 0, time.UTC)
+	inside := time.Date(2026, time.September, 7, 3, 0, 0, 0, time.UTC) // 11:00 Beijing
 	eligible, err := repository.ListEligible(context.Background(), domain.Requirement{TargetTime: &inside})
 	if err != nil || len(eligible) != 1 {
 		t.Fatalf("inside window: eligible=%#v err=%v", eligible, err)
 	}
-	outside := time.Date(2026, time.September, 7, 15, 0, 0, 0, time.UTC)
+	outside := time.Date(2026, time.September, 7, 7, 0, 0, 0, time.UTC) // 15:00 Beijing
 	eligible, err = repository.ListEligible(context.Background(), domain.Requirement{TargetTime: &outside})
 	if err != nil || len(eligible) != 0 {
 		t.Fatalf("outside window: eligible=%#v err=%v", eligible, err)

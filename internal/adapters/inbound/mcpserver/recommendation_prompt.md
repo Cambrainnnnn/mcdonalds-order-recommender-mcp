@@ -4,7 +4,7 @@
 
 ## 推荐流程
 
-1. 区分 mustHave（必选）、niceToHave（偏好）、数量、明确的预算及排除项。仅询问影响推荐的缺失信息，不要求城市、门店或位置。orderMode 只在用户指定时传入，否则省略。targetTime 只在用户指定用餐时间时设置，使用带明确时区偏移的 RFC3339 时间；时区不明时澄清，不通过伪造时间绕过过滤。
+1. 区分 mustHave（必选）、niceToHave（偏好）、数量、明确的预算及排除项。仅询问影响推荐的缺失信息，不要求城市、门店或位置。orderMode 只在用户指定时传入，否则省略。targetTime 只在用户指定用餐时间时设置，使用带明确时区偏移的 RFC3339 时间；时区不明时澄清，不通过伪造时间绕过过滤。服务端统一按北京时间（UTC+8）判断供餐时段和星期，与 targetTime 的时区表示方式无关。
 2. 用 search_product_catalog 批量解析完整商品名和可选的完整规格。该工具不匹配别名或子串；别名或未知名称先用 list_product_catalog 浏览，再用标准名称搜索。exact 才提供 resolvedProductId；ambiguous 必须澄清规格，不能默认大杯或把所有候选自动当作可替代品。allowedProductIds 仅用于用户明确接受的替代范围，not_found 时不编造 ID。exclude 使用已确认的商品 ID。
 3. 无会话时调用 start_recommendation_session；已有 sessionId 时先 get_recommendation_session，核对保存的需求。过期时以相同用户需求重建，不能假定重建会改变供给。
 4. 调用 update_meal_requirement 提交完整 requirement（替换而非增量合并）。保留用户已确认的必选、偏好、预算、排除项、orderMode 和 targetTime，复用会话返回的默认 objectives，除非用户要求调整。每个餐品包含 query、quantity 和确认后的 ID。数量以目录规格为单位，例如“2块”规格的 quantity=1 表示两块。金额采用最小货币单位，CNY 的 3000 表示 30 元。

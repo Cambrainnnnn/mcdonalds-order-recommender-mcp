@@ -66,7 +66,7 @@ type Requirement struct {
 	People     int              `json:"people,omitempty"`
 	OrderMode  OrderMode        `json:"orderMode,omitempty" jsonschema:"Optional filter for maintained offer order modes. Omit when unspecified; do not require the user to choose."`
 	Location   Location         `json:"location,omitempty" jsonschema:"Reserved for future store integration. Not required or used by the current server-catalog recommendation mode."`
-	TargetTime *time.Time       `json:"targetTime,omitempty"`
+	TargetTime *time.Time       `json:"targetTime,omitempty" jsonschema:"Optional requested meal instant in RFC3339 with timezone offset. Offer daily windows and weekdays are evaluated in Beijing time (UTC+8). Omit when unspecified."`
 	MustHave   []ProductRequest `json:"mustHave,omitempty"`
 	NiceToHave []ProductRequest `json:"niceToHave,omitempty"`
 	Exclude    []string         `json:"exclude,omitempty"`

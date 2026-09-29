@@ -36,9 +36,9 @@ const (
 type Component = selection.Component
 type ChoiceGroup = selection.ChoiceGroup
 
-// ValidTimeRule describes a daily availability window. Weekdays use Go's
-// time.Weekday numbering (Sunday=0); an empty list means every day. Start is
-// inclusive and End is exclusive, both in HH:MM format.
+// ValidTimeRule describes a daily availability window in Beijing time (UTC+8).
+// Weekdays use Go's time.Weekday numbering (Sunday=0); an empty list means
+// every day. Start is inclusive and End is exclusive, both in HH:MM format.
 type ValidTimeRule struct {
 	Weekdays []int  `json:"weekdays,omitempty"`
 	Start    string `json:"start"`
@@ -441,10 +441,17 @@ func validateOffer(offer *Offer) error {
 	return nil
 }
 
+// The maintained catalog serves China and uses a fixed UTC+8 business clock.
+// Do not depend on the host's TZ or zoneinfo files in minimal container images.
+var offerBusinessLocation = time.FixedZone("Beijing", 8*60*60)
+
+// MatchesValidTime interprets the instant in the catalog's business timezone,
+// including its weekday, regardless of the caller's timestamp offset.
 func MatchesValidTime(rules []ValidTimeRule, at time.Time) bool {
 	if len(rules) == 0 {
 		return true
 	}
+	at = at.In(offerBusinessLocation)
 	minute := at.Hour()*60 + at.Minute()
 	for _, rule := range rules {
 		if len(rule.Weekdays) > 0 && !slices.Contains(rule.Weekdays, int(at.Weekday())) {
