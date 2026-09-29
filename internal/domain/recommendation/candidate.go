@@ -29,6 +29,10 @@ type PriceQuote struct {
 // CandidateProduct keeps the canonical product used by recommendation rules
 // separate from the channel-specific product code used for purchasing/pricing.
 type CandidateProduct struct {
+	Name               string `json:"name,omitempty"`
+	Specification      string `json:"specification,omitempty"`
+	Brand              string `json:"brand,omitempty"`
+	ChoiceGroupName    string `json:"choiceGroupName,omitempty"`
 	CanonicalProductID string `json:"canonicalProductId"`
 	ProductCode        string `json:"productCode,omitempty"`
 	Quantity           int    `json:"quantity"`
@@ -37,6 +41,7 @@ type CandidateProduct struct {
 }
 
 type PurchaseLeg struct {
+	OfferTitle     string             `json:"offerTitle,omitempty"`
 	Channel        string             `json:"channel"`
 	OfferVersionID string             `json:"offerVersionId,omitempty"`
 	Products       []CandidateProduct `json:"products"`

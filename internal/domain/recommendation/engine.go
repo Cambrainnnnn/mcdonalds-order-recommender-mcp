@@ -19,6 +19,7 @@ var ErrIncompleteRequirement = errors.New("requirement is incomplete")
 // recommendation engine. Adapters are responsible for converting external
 // offer/menu data into this representation.
 type CatalogOption struct {
+	OfferTitle     string
 	ID             string
 	Channel        string
 	OfferVersionID string
@@ -193,6 +194,7 @@ func optionLeg(option CatalogOption) PurchaseLeg {
 	return PurchaseLeg{
 		Channel:        option.Channel,
 		OfferVersionID: option.OfferVersionID,
+		OfferTitle:     option.OfferTitle,
 		Products:       slices.Clone(option.Products),
 		ProductCodes:   codes,
 		Price:          option.Price,

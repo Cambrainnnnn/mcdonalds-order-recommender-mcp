@@ -82,13 +82,29 @@ func (s *Service) GenerateRecommendations(ctx context.Context, id string) (*Reco
 			s.restoreReady(ctx, session)
 			return nil, fmt.Errorf("load maintained products: %w", err)
 		}
+		// Resolve display metadata from the complete catalog, including disabled
+		// and component-only products that remain valid within published offers.
+		byID := make(map[string]*productdomain.Product, len(products))
+		for _, p := range products {
+			byID[p.ID] = p
+		}
+		for i := range options {
+			for j := range options[i].Products {
+				item := &options[i].Products[j]
+				if p := byID[item.CanonicalProductID]; p != nil {
+					item.Name, item.Specification, item.Brand = p.Name, p.Specification, p.Brand
+				} else {
+					options[i].Warnings = append(options[i].Warnings, "套餐包含目录中不存在的单品，无法确认其名称和规格："+item.CanonicalProductID)
+				}
+			}
+		}
 		for _, p := range products {
 			if p.Status != productdomain.StatusActive || !p.Supports(productdomain.SalesScopeStandalone) || p.Price == nil {
 				continue
 			}
 			options = append(options, domain.CatalogOption{
 				ID: p.ID, Channel: domain.CatalogChannel, Eligibility: domain.EligibilityEligible,
-				Products: []domain.CandidateProduct{{CanonicalProductID: p.ID, Quantity: 1}},
+				Products: []domain.CandidateProduct{{CanonicalProductID: p.ID, Name: p.Name, Specification: p.Specification, Brand: p.Brand, Quantity: 1}},
 				Price:    domain.PriceQuote{Amount: domain.Money{Amount: p.Price.Amount, Currency: p.Price.Currency}, Confidence: domain.PriceUnverified, QuotedAt: p.UpdatedAt, Source: domain.CatalogChannel},
 				Warnings: []string{"价格来自服务端维护的单品参考价"},
 			})
@@ -148,6 +164,7 @@ func normalizeCatalogOptions(offers []OfferVersion, official OfficialSupply) ([]
 			Channel: domain.OfficialChannel,
 			Products: []domain.CandidateProduct{{
 				CanonicalProductID: product.CanonicalProductID,
+				Name:               product.Name,
 				ProductCode:        product.Code,
 				Quantity:           1,
 			}},
@@ -175,15 +192,19 @@ func normalizeOfferVariants(offer OfferVersion) ([]domain.CatalogOption, error) 
 	if err != nil {
 		return nil, fmt.Errorf("offer %q: %w", offer.ID, err)
 	}
+	groupNames := make(map[string]string, len(offer.ChoiceGroups))
+	for _, group := range offer.ChoiceGroups {
+		groupNames[group.ID] = group.Name
+	}
 	result := make([]domain.CatalogOption, 0, len(variants))
 	for index, variant := range variants {
 		price := offer.Price
 		price.Amount.Amount += variant.ExtraPrice
 		products := make([]domain.CandidateProduct, 0, len(variant.Components))
 		for _, component := range variant.Components {
-			products = append(products, domain.CandidateProduct{CanonicalProductID: component.CanonicalProductID, Quantity: component.Quantity, ChoiceGroupID: component.ChoiceGroupID, ExtraPrice: component.ExtraPrice})
+			products = append(products, domain.CandidateProduct{CanonicalProductID: component.CanonicalProductID, Quantity: component.Quantity, ChoiceGroupID: component.ChoiceGroupID, ChoiceGroupName: groupNames[component.ChoiceGroupID], ExtraPrice: component.ExtraPrice})
 		}
-		result = append(result, domain.CatalogOption{ID: fmt.Sprintf("%s#%d", offer.ID, index), Channel: channel, OfferVersionID: offer.ID, Products: products, Price: price, Eligibility: eligibility, PurchaseURL: offer.PurchaseURL, Warnings: slices.Clone(offer.Warnings)})
+		result = append(result, domain.CatalogOption{ID: fmt.Sprintf("%s#%d", offer.ID, index), Channel: channel, OfferVersionID: offer.ID, OfferTitle: offer.Title, Products: products, Price: price, Eligibility: eligibility, PurchaseURL: offer.PurchaseURL, Warnings: slices.Clone(offer.Warnings)})
 	}
 	return result, nil
 }

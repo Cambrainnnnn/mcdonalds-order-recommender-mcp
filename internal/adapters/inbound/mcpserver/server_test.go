@@ -234,3 +234,141 @@ func TestCatalogToolsResolveDisabledProduct(t *testing.T) {
 		}
 	}
 }
+
+// Exercise the real application and engine through MCP, not a fake recommendation
+// response: offer titles and selected SKU metadata must survive the entire path.
+type namedOffers struct{}
+
+func (namedOffers) ListEligible(context.Context, domain.Requirement) ([]app.OfferVersion, error) {
+	return []app.OfferVersion{{
+		ID: "offer-version", Title: "早餐随心配", Source: "maintained",
+		Price:        domain.PriceQuote{Amount: domain.Money{Amount: 1000, Currency: "CNY"}},
+		ChoiceGroups: []app.OfferChoiceGroup{{ID: "drink", Name: "饮品二选一", MinSelect: 1, MaxSelect: 1}},
+		Components: []app.OfferComponent{
+			{CanonicalProductID: "burger", Quantity: 1},
+			{CanonicalProductID: "soy-small", Quantity: 1, ChoiceGroupID: "drink", ExtraPrice: 100},
+			{CanonicalProductID: "soy-large", Quantity: 1, ChoiceGroupID: "drink", ExtraPrice: 200},
+		},
+	}}, nil
+}
+
+type namedProducts []*productdomain.Product
+
+func (p namedProducts) List(context.Context) ([]*productdomain.Product, error) { return p, nil }
+
+func TestRecommendationNamesOverMCP(t *testing.T) {
+	products := namedProducts{
+		{ID: "burger", Brand: "mcd", Name: "麦香鸡", Specification: "1个", Status: productdomain.StatusDisabled, SalesScopes: []productdomain.SalesScope{productdomain.SalesScopeOfferComponent}},
+		{ID: "soy-small", Brand: "mcd", Name: "豆浆", Specification: "小杯", Status: productdomain.StatusActive, SalesScopes: []productdomain.SalesScope{productdomain.SalesScopeOfferComponent}},
+		{ID: "soy-large", Brand: "mcd", Name: "豆浆", Specification: "大杯", Status: productdomain.StatusActive, SalesScopes: []productdomain.SalesScope{productdomain.SalesScopeOfferComponent}},
+		{ID: "fries", Brand: "mcd", Name: "薯条", Specification: "中份", Status: productdomain.StatusActive, SalesScopes: []productdomain.SalesScope{productdomain.SalesScopeStandalone}, Price: &productdomain.Money{Amount: 500, Currency: "CNY"}},
+	}
+	for _, standalone := range []bool{false, true} {
+		t.Run(map[bool]string{false: "selected offer plus supplement", true: "standalone"}[standalone], func(t *testing.T) {
+			ctx := context.Background()
+			service := app.NewService(memory.NewSessionRepository(), ids.Default, time.Now, time.Hour, app.WithLocalCatalogDependencies(namedOffers{}, products, domain.NewEngine(), domain.ScoringPolicy{}))
+			catalog := productsapp.NewService(memory.NewProductRepository(), ids.Default, time.Now)
+			clientTransport, serverTransport := mcp.NewInMemoryTransports()
+			serverSession, err := New(service, catalog).Connect(ctx, serverTransport, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer serverSession.Close()
+			clientSession, err := mcp.NewClient(&mcp.Implementation{Name: "test", Version: "1"}, nil).Connect(ctx, clientTransport, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer clientSession.Close()
+			call := func(name string, args any, output any) {
+				t.Helper()
+				result, err := clientSession.CallTool(ctx, &mcp.CallToolParams{Name: name, Arguments: args})
+				if err != nil {
+					t.Fatal(err)
+				}
+				if result.IsError {
+					t.Fatalf("%s: %+v", name, result.Content)
+				}
+				payload, err := json.Marshal(result.StructuredContent)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if err := json.Unmarshal(payload, output); err != nil {
+					t.Fatal(err)
+				}
+			}
+			var session sessionOutput
+			call("start_recommendation_session", map[string]any{}, &session)
+			wants := []domain.ProductRequest{{ResolvedProductID: "fries", Quantity: 2}}
+			if !standalone {
+				wants = append(wants, domain.ProductRequest{ResolvedProductID: "burger", Quantity: 1}, domain.ProductRequest{ResolvedProductID: "soy-small", Quantity: 1})
+			}
+			call("update_meal_requirement", updateRequirementInput{SessionID: session.Session.ID, Requirement: domain.Requirement{MustHave: wants}}, &session)
+			// Decode into generic JSON to verify public field names rather than only Go fields.
+			var output struct {
+				Result struct {
+					Recommendations []struct {
+						Candidate struct {
+							TotalPrice domain.Money `json:"totalPrice"`
+							Legs       []struct {
+								Title    string           `json:"offerTitle"`
+								Version  string           `json:"offerVersionId"`
+								Products []map[string]any `json:"products"`
+							} `json:"purchaseLegs"`
+						} `json:"candidate"`
+					} `json:"recommendations"`
+				} `json:"result"`
+			}
+			call("generate_meal_recommendations", sessionIDInput{SessionID: session.Session.ID}, &output)
+			if len(output.Result.Recommendations) != 1 {
+				t.Fatalf("recommendations=%+v", output)
+			}
+			candidate := output.Result.Recommendations[0].Candidate
+			wantPrice, wantCount := int64(2100), 3
+			if standalone {
+				wantPrice, wantCount = 1000, 1
+			}
+			if candidate.TotalPrice.Amount != wantPrice {
+				t.Fatalf("price=%d", candidate.TotalPrice.Amount)
+			}
+			seen := map[string]bool{}
+			offerCount := 0
+			for _, leg := range candidate.Legs {
+				if leg.Version != "" {
+					offerCount++
+				}
+				if leg.Version != "" && leg.Title != "早餐随心配" {
+					t.Fatalf("offer title=%q", leg.Title)
+				}
+				for _, item := range leg.Products {
+					id := item["canonicalProductId"].(string)
+					seen[id] = true
+					var expected *productdomain.Product
+					for _, p := range products {
+						if p.ID == id {
+							expected = p
+						}
+					}
+					if expected == nil || item["name"] != expected.Name || item["specification"] != expected.Specification || item["brand"] != expected.Brand {
+						t.Fatalf("display fields=%+v", item)
+					}
+					if id == "fries" && item["quantity"] != float64(2) {
+						t.Fatalf("quantity=%+v", item)
+					}
+					if id == "soy-small" && (item["choiceGroupName"] != "饮品二选一" || item["extraPrice"] != float64(100)) {
+						t.Fatalf("selection=%+v", item)
+					}
+				}
+			}
+			wantOffers := 1
+			if standalone {
+				wantOffers = 0
+			}
+			if offerCount != wantOffers {
+				t.Fatalf("offer count=%d, want %d", offerCount, wantOffers)
+			}
+			if len(seen) != wantCount || seen["soy-large"] {
+				t.Fatalf("selected products=%v", seen)
+			}
+		})
+	}
+}
