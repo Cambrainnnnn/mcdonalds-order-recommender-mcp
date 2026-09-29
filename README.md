@@ -1,5 +1,7 @@
 # Meal Recommendation Service
 
+应用只提供套餐推荐及支撑推荐所需的目录维护，不提供直接购买链接、渠道跳转、下单、支付或核销。购买链接生成、展示、跳转和域名白名单校验均不属于应用功能，也不列入开发待办或上线验收。
+
 当前推荐只使用服务端维护的单品、参考价和已发布套餐。城市、门店、库存和备餐不在当前范围，作为未来可选扩展保留。无需提供城市、门店或取餐方式即可推荐；取餐方式仅在用户指定时作为套餐筛选条件。
 
 单卖候选必须启用、允许 standalone 且有维护价格；停用单品仍可通过已发布套餐参与推荐。报价来自维护数据，不是官方实时报价。现有套餐有效期和供餐时段仍参与筛选。
@@ -7,6 +9,8 @@
 历史官方 MCP Adapter 保留供未来扩展，但当前 API/MCP 启动装配不启用它，即使设置 APP_MCD_MCP_TOKEN 也不会发起门店、菜单或算价请求。
 
 本地维护的商品和套餐可通过 `make catalog-export` 导出到 `data/catalog.json`，随 Git 管理。设置 `APP_CATALOG_SEED_MODE=if-empty` 或 `merge` 及 `APP_CATALOG_SEED_PATH` 后，服务启动时会在 migration 后加载快照；默认 `off`。完整操作见 [目录快照维护](docs/catalog-snapshot.md)。
+
+阿里云部署准备见[部署规划与恢复记录](docs/aliyun-deployment-plan.md)，涵盖数据库维护、MCP 鉴权、私网运营接口和分阶段验收。
 
 ## 架构
 
@@ -263,6 +267,8 @@ MCP 暴露以下只读目录查询和推荐会话工具，不暴露套餐发布�
 - `get_recommendation_session`
 - `update_meal_requirement`
 - `generate_meal_recommendations`
+
+另提供 `recommend_meal` 标准推荐与排查 prompt，通过 `prompts/list` / `prompts/get` 获取，支持可选的 `request` 和 `session_id` 参数。客户端需将返回消息纳入模型上下文；详见 [MCP 标准推荐提示词](docs/mcp-recommendation-prompt.md)。
 
 ### 本地运行
 

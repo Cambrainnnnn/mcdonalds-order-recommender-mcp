@@ -69,7 +69,8 @@ func New(recommendations RecommendationUseCase, products ProductCatalog) *mcp.Se
 	server := mcp.NewServer(&mcp.Implementation{
 		Name:    "meal-recommendation",
 		Version: "1.0.0",
-	}, nil)
+	}, &mcp.ServerOptions{Instructions: recommendationInstructions})
+	registerRecommendationPrompt(server)
 
 	mcp.AddTool(server, &mcp.Tool{
 		Name:        "start_recommendation_session",
@@ -103,7 +104,7 @@ func New(recommendations RecommendationUseCase, products ProductCatalog) *mcp.Se
 
 	mcp.AddTool(server, &mcp.Tool{
 		Name:        "generate_meal_recommendations",
-		Description: "Generate ranked recommendations for a complete session requirement using server-maintained published offers and priced standalone products. Returns offerTitle for offers and name, specification, brand and quantity for products, with choiceGroupName for named selections. Explain recommendations using these display fields; IDs are for tool calls, not user-facing names. Never invent missing names. No store lookup, stock check or official live pricing. City, store and order mode are not required.",
+		Description: "Generate ranked recommendations for a complete session requirement using server-maintained published offers and priced standalone products. Returns offerTitle for offers and name, specification, brand and quantity for products, with choiceGroupName for named selections. Explain recommendations using these display fields; IDs are for tool calls, not user-facing names. Never invent missing names. No store lookup, stock check or official live pricing. City, store and order mode are not required. A ready session only has complete requirement fields. No eligible candidates does not prove the offer catalog is empty; inspect the saved requirement and report observed facts separately from hypotheses.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, input sessionIDInput) (*mcp.CallToolResult, recommendationsOutput, error) {
 		result, err := recommendations.GenerateRecommendations(ctx, input.SessionID)
 		return nil, recommendationsOutput{Result: result}, err
