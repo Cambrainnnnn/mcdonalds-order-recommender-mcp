@@ -8,14 +8,18 @@
       "specification": "1个",
       "category": "汉堡",
       "aliases": [],
-      "description": "双牛肉饼汉堡，配芝士、生菜、洋葱、酸黄瓜及酱汁。 来源：https://www.mcdonalds.com.cn/product/Big-Mac；采集日期：2026-09-06。",
+      "description": "双牛肉饼汉堡，配芝士、生菜、洋葱、酸黄瓜及酱汁。 来源：https://www.mcdonalds.com.cn/product/Big-Mac；采集日期：2026-09-06。 参考价格来源：麦当劳点餐小程序；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅；到店取餐；截图single-1/IMG_6822.PNG；补录日期2026-09-27；截图未明确采集日期，仅作参考价格。",
+      "price": {
+        "amount": 2650,
+        "currency": "CNY"
+      },
       "salesScopes": [
         "standalone",
         "offer_component"
       ],
       "status": "active",
       "createdAt": "2026-09-06T04:13:52.30588Z",
-      "updatedAt": "2026-09-06T04:13:52.30588Z"
+      "updatedAt": "2026-09-27T15:10:17.784464Z"
     },
     {
       "id": "222273404231745538",
@@ -24,14 +28,18 @@
       "specification": "1个",
       "category": "汉堡",
       "aliases": [],
-      "description": "脆皮鸡肉汉堡，配生菜。 来源：https://www.mcdonalds.com.cn/product/McChicken；采集日期：2026-09-06。",
+      "description": "脆皮鸡肉汉堡，配生菜。 来源：https://www.mcdonalds.com.cn/product/McChicken；采集日期：2026-09-06。 参考价格来源：麦当劳点餐小程序；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅；到店取餐；截图single-1/IMG_6820.PNG；补录日期2026-09-27；截图未明确采集日期，仅作参考价格。",
+      "price": {
+        "amount": 1650,
+        "currency": "CNY"
+      },
       "salesScopes": [
         "standalone",
         "offer_component"
       ],
       "status": "active",
       "createdAt": "2026-09-06T04:13:52.326469Z",
-      "updatedAt": "2026-09-06T04:13:52.326469Z"
+      "updatedAt": "2026-09-27T15:10:17.75767Z"
     },
     {
       "id": "222273404235939840",
@@ -40,14 +48,18 @@
       "specification": "1个",
       "category": "汉堡",
       "aliases": [],
-      "description": "鳕鱼饼汉堡，配沙拉酱。 来源：https://www.mcdonalds.com.cn/product/Filet-O-Fish；采集日期：2026-09-06。",
+      "description": "鳕鱼饼汉堡，配沙拉酱。 来源：https://www.mcdonalds.com.cn/product/Filet-O-Fish；采集日期：2026-09-06。 参考价格来源：麦当劳点餐小程序；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅；到店取餐；截图single-1/IMG_6822.PNG；补录日期2026-09-27；截图未明确采集日期，仅作参考价格。",
+      "price": {
+        "amount": 2200,
+        "currency": "CNY"
+      },
       "salesScopes": [
         "standalone",
         "offer_component"
       ],
       "status": "active",
       "createdAt": "2026-09-06T04:13:52.329888Z",
-      "updatedAt": "2026-09-06T04:13:52.329888Z"
+      "updatedAt": "2026-09-27T15:10:17.792351Z"
     },
     {
       "id": "222273404235939842",
@@ -56,14 +68,18 @@
       "specification": "1个",
       "category": "汉堡",
       "aliases": [],
-      "description": "双层牛肉芝士汉堡。 来源：https://www.mcdonalds.com.cn/product/Double-Cheeseburger；采集日期：2026-09-06。",
+      "description": "双层牛肉芝士汉堡。 来源：https://www.mcdonalds.com.cn/product/Double-Cheeseburger；采集日期：2026-09-06。 参考价格来源：麦当劳点餐小程序；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅；到店取餐；截图single-1/IMG_6823.PNG；补录日期2026-09-27；截图未明确采集日期，仅作参考价格。",
+      "price": {
+        "amount": 2250,
+        "currency": "CNY"
+      },
       "salesScopes": [
         "standalone",
         "offer_component"
       ],
       "status": "active",
       "createdAt": "2026-09-06T04:13:52.337953Z",
-      "updatedAt": "2026-09-06T04:13:52.337953Z"
+      "updatedAt": "2026-09-27T15:10:17.816182Z"
     },
     {
       "id": "222273404235939843",
@@ -72,14 +88,18 @@
       "specification": "1个",
       "category": "汉堡",
       "aliases": [],
-      "description": "双鳕鱼饼汉堡。 来源：https://www.mcdonalds.com.cn/product/double-fof；采集日期：2026-09-06。",
+      "description": "双鳕鱼饼汉堡。 来源：https://www.mcdonalds.com.cn/product/double-fof；采集日期：2026-09-06。 single-1补录修订v2：用户于2026-09-29确认，原待确认序号3，IMG_6822.PNG；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅，到店取餐；参考单价。按用户要求不区分风味，保留现有通用商品。",
+      "price": {
+        "amount": 2500,
+        "currency": "CNY"
+      },
       "salesScopes": [
         "standalone",
         "offer_component"
       ],
       "status": "active",
       "createdAt": "2026-09-06T04:13:52.343237Z",
-      "updatedAt": "2026-09-06T04:13:52.343237Z"
+      "updatedAt": "2026-09-29T14:41:32.564145Z"
     },
     {
       "id": "222273404235939844",
@@ -106,14 +126,18 @@
       "specification": "1个",
       "category": "汉堡",
       "aliases": [],
-      "description": "安格斯牛肉汉堡，配培根、黄车打芝士和生菜。 来源：https://www.mcdonalds.com.cn/product/Thick-Angus-Beef-Burger-with-Bacon；采集日期：2026-09-06。",
+      "description": "安格斯牛肉汉堡，配培根、黄车打芝士和生菜。 来源：https://www.mcdonalds.com.cn/product/Thick-Angus-Beef-Burger-with-Bacon；采集日期：2026-09-06。 参考价格来源：麦当劳点餐小程序；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅；到店取餐；截图single-1/IMG_6825.PNG；补录日期2026-09-27；截图未明确采集日期，仅作参考价格。",
+      "price": {
+        "amount": 3450,
+        "currency": "CNY"
+      },
       "salesScopes": [
         "standalone",
         "offer_component"
       ],
       "status": "active",
       "createdAt": "2026-09-06T04:13:52.345041Z",
-      "updatedAt": "2026-09-06T04:13:52.345041Z"
+      "updatedAt": "2026-09-27T15:10:17.832768Z"
     },
     {
       "id": "222273404235939846",
@@ -122,14 +146,18 @@
       "specification": "1个",
       "category": "汉堡",
       "aliases": [],
-      "description": "去骨鸡排汉堡，配生菜及烤味酱。 来源：https://www.mcdonalds.com.cn/product/Grilled-Chicken-Sandwich；采集日期：2026-09-06。",
+      "description": "去骨鸡排汉堡，配生菜及烤味酱。 来源：https://www.mcdonalds.com.cn/product/Grilled-Chicken-Sandwich；采集日期：2026-09-06。 参考价格来源：麦当劳点餐小程序；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅；到店取餐；截图single-1/IMG_6820.PNG；补录日期2026-09-27；截图未明确采集日期，仅作参考价格。",
+      "price": {
+        "amount": 2400,
+        "currency": "CNY"
+      },
       "salesScopes": [
         "standalone",
         "offer_component"
       ],
       "status": "active",
       "createdAt": "2026-09-06T04:13:52.321896Z",
-      "updatedAt": "2026-09-06T04:13:52.321896Z"
+      "updatedAt": "2026-09-27T15:10:17.745536Z"
     },
     {
       "id": "222273404235939847",
@@ -138,14 +166,18 @@
       "specification": "1个",
       "category": "汉堡",
       "aliases": [],
-      "description": "双牛肉饼汉堡，配培根、生菜、番茄和酱料。 来源：https://www.mcdonalds.com.cn/product/Bacon-Lettuce-Tomato-Double-Beef-Burger；采集日期：2026-09-06。",
+      "description": "双牛肉饼汉堡，配培根、生菜、番茄和酱料。 来源：https://www.mcdonalds.com.cn/product/Bacon-Lettuce-Tomato-Double-Beef-Burger；采集日期：2026-09-06。 参考价格来源：麦当劳点餐小程序；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅；到店取餐；截图single-1/IMG_6823.PNG；补录日期2026-09-27；截图未明确采集日期，仅作参考价格。",
+      "price": {
+        "amount": 2450,
+        "currency": "CNY"
+      },
       "salesScopes": [
         "standalone",
         "offer_component"
       ],
       "status": "active",
       "createdAt": "2026-09-06T04:13:52.347842Z",
-      "updatedAt": "2026-09-06T04:13:52.347842Z"
+      "updatedAt": "2026-09-27T15:10:17.808389Z"
     },
     {
       "id": "222273404235939848",
@@ -170,14 +202,18 @@
       "specification": "1个",
       "category": "汉堡",
       "aliases": [],
-      "description": "双牛肉饼汉堡，配德式图林根香肠。 来源：https://www.mcdonalds.com.cn/product/beef-sausage；采集日期：2026-09-06。",
+      "description": "双牛肉饼汉堡，配德式图林根香肠。 来源：https://www.mcdonalds.com.cn/product/beef-sausage；采集日期：2026-09-06。 参考价格来源：麦当劳点餐小程序；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅；到店取餐；截图single-1/IMG_6823.PNG；补录日期2026-09-27；截图未明确采集日期，仅作参考价格。",
+      "price": {
+        "amount": 2650,
+        "currency": "CNY"
+      },
       "salesScopes": [
         "standalone",
         "offer_component"
       ],
       "status": "active",
       "createdAt": "2026-09-06T04:13:52.340766Z",
-      "updatedAt": "2026-09-06T04:13:52.340766Z"
+      "updatedAt": "2026-09-27T15:10:17.80041Z"
     },
     {
       "id": "222273404235939850",
@@ -186,14 +222,18 @@
       "specification": "标准份",
       "category": "卷",
       "aliases": [],
-      "description": "鸡柳卷，配笋丝及红油麻香酱。 来源：https://www.mcdonalds.com.cn/product/%E9%85%A5%E9%85%A5%E5%A4%9A%E7%AC%8B%E5%8D%B7；采集日期：2026-09-06。 官网未标规格，“标准份”为本地录入约定。",
+      "description": "鸡柳卷，配笋丝及红油麻香酱。 来源：https://www.mcdonalds.com.cn/product/%E9%85%A5%E9%85%A5%E5%A4%9A%E7%AC%8B%E5%8D%B7；采集日期：2026-09-06。 官网未标规格，“标准份”为本地录入约定。 参考价格来源：麦当劳点餐小程序；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅；到店取餐；截图single-1/IMG_6820.PNG；补录日期2026-09-27；截图未明确采集日期，仅作参考价格。",
+      "price": {
+        "amount": 2050,
+        "currency": "CNY"
+      },
       "salesScopes": [
         "standalone",
         "offer_component"
       ],
       "status": "active",
       "createdAt": "2026-09-06T04:13:52.349121Z",
-      "updatedAt": "2026-09-06T04:13:52.349121Z"
+      "updatedAt": "2026-09-27T15:10:17.766187Z"
     },
     {
       "id": "222273404235939851",
@@ -202,14 +242,18 @@
       "specification": "1个",
       "category": "汉堡",
       "aliases": [],
-      "description": "安格斯牛肉汉堡，配芝士风味酱和番茄。 来源：https://www.mcdonalds.com.cn/product/Cheese-Angus；采集日期：2026-09-06。",
+      "description": "安格斯牛肉汉堡，配芝士风味酱和番茄。 来源：https://www.mcdonalds.com.cn/product/Cheese-Angus；采集日期：2026-09-06。 参考价格来源：麦当劳点餐小程序；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅；到店取餐；截图single-1/IMG_6825.PNG；补录日期2026-09-27；截图未明确采集日期，仅作参考价格。",
+      "price": {
+        "amount": 3150,
+        "currency": "CNY"
+      },
       "salesScopes": [
         "standalone",
         "offer_component"
       ],
       "status": "active",
       "createdAt": "2026-09-06T04:13:52.346493Z",
-      "updatedAt": "2026-09-06T04:13:52.346493Z"
+      "updatedAt": "2026-09-27T15:10:17.842724Z"
     },
     {
       "id": "222273404235939852",
@@ -220,14 +264,18 @@
       "aliases": [
         "麦辣鸡腿堡"
       ],
-      "description": "辣味脆皮鸡腿肉汉堡，配生菜及沙拉酱。 来源：https://www.mcdonalds.com.cn/product/Spicy-Chicken-Filet；采集日期：2026-09-06。",
+      "description": "辣味脆皮鸡腿肉汉堡，配生菜及沙拉酱。 来源：https://www.mcdonalds.com.cn/product/Spicy-Chicken-Filet；采集日期：2026-09-06。 参考价格来源：麦当劳点餐小程序；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅；到店取餐；截图single-1/IMG_6820.PNG；补录日期2026-09-27；截图未明确采集日期，仅作参考价格。",
+      "price": {
+        "amount": 2300,
+        "currency": "CNY"
+      },
       "salesScopes": [
         "standalone",
         "offer_component"
       ],
       "status": "active",
       "createdAt": "2026-09-06T04:13:52.317732Z",
-      "updatedAt": "2026-09-06T04:13:52.317732Z"
+      "updatedAt": "2026-09-27T15:10:17.728723Z"
     },
     {
       "id": "222277595973025792",
@@ -258,14 +306,18 @@
         "中杯可口可乐",
         "中可乐"
       ],
-      "description": "搭配正餐小食，好带劲！ 官网营养规格：中；本地规格：中杯。 来源：https://www.mcdonalds.com.cn/product/Coca-Cola；采集日期：2026-09-06。",
+      "description": "搭配正餐小食，好带劲！ 官网营养规格：中；本地规格：中杯。 来源：https://www.mcdonalds.com.cn/product/Coca-Cola；采集日期：2026-09-06。 single-1补录修订v2：用户于2026-09-29确认，原待确认序号36，IMG_6834.PNG；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅，到店取餐；参考单价。用户确认默认中杯；未指定温度，不将价格扩展至冰/热等细分规格。截图名称可乐对应普通可口可乐，不扩展至无糖可口可乐。",
+      "price": {
+        "amount": 950,
+        "currency": "CNY"
+      },
       "salesScopes": [
         "standalone",
         "offer_component"
       ],
       "status": "active",
       "createdAt": "2026-09-06T08:51:53.472399Z",
-      "updatedAt": "2026-09-06T08:51:53.472399Z"
+      "updatedAt": "2026-09-29T14:41:33.084469Z"
     },
     {
       "id": "222277642668212224",
@@ -372,14 +424,18 @@
         "中杯阳光柠檬红茶",
         "中杯柠檬红茶"
       ],
-      "description": "甜蜜口感，清新滋润。 官网营养规格：中；本地规格：中杯。 来源：https://www.mcdonalds.com.cn/product/Fuze-Tea；采集日期：2026-09-06。",
+      "description": "甜蜜口感，清新滋润。 官网营养规格：中；本地规格：中杯。 来源：https://www.mcdonalds.com.cn/product/Fuze-Tea；采集日期：2026-09-06。 single-1补录修订v2：用户于2026-09-29确认，原待确认序号40，IMG_6835.PNG；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅，到店取餐；参考单价。用户确认默认中杯；未指定温度，不将价格扩展至冰/热等细分规格。",
+      "price": {
+        "amount": 950,
+        "currency": "CNY"
+      },
       "salesScopes": [
         "standalone",
         "offer_component"
       ],
       "status": "active",
       "createdAt": "2026-09-06T08:52:25.007069Z",
-      "updatedAt": "2026-09-06T08:52:25.007069Z"
+      "updatedAt": "2026-09-29T14:41:33.125299Z"
     },
     {
       "id": "222277777468948480",
@@ -429,14 +485,18 @@
         "中杯雪碧",
         "中雪碧"
       ],
-      "description": "搭配正餐小食，好清爽！ 官网营养规格：中；本地规格：中杯。 来源：https://www.mcdonalds.com.cn/product/Sprite；采集日期：2026-09-06。",
+      "description": "搭配正餐小食，好清爽！ 官网营养规格：中；本地规格：中杯。 来源：https://www.mcdonalds.com.cn/product/Sprite；采集日期：2026-09-06。 single-1补录修订v2：用户于2026-09-29确认，原待确认序号37，IMG_6834.PNG；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅，到店取餐；参考单价。用户确认默认中杯；未指定温度，不将价格扩展至冰/热等细分规格。",
+      "price": {
+        "amount": 950,
+        "currency": "CNY"
+      },
       "salesScopes": [
         "standalone",
         "offer_component"
       ],
       "status": "active",
       "createdAt": "2026-09-06T08:52:40.884493Z",
-      "updatedAt": "2026-09-06T08:52:40.884493Z"
+      "updatedAt": "2026-09-29T14:41:33.097889Z"
     },
     {
       "id": "222277837858537472",
@@ -467,14 +527,18 @@
         "中杯怡泉+C",
         "怡泉C中杯"
       ],
-      "description": "清爽柠檬搭配丰富气泡，酸酸甜甜夏日必备！ 官网营养规格：中；本地规格：中杯。 来源：https://www.mcdonalds.com.cn/product/%E6%80%A1%E6%B3%89C；采集日期：2026-09-06。",
+      "description": "清爽柠檬搭配丰富气泡，酸酸甜甜夏日必备！ 官网营养规格：中；本地规格：中杯。 来源：https://www.mcdonalds.com.cn/product/%E6%80%A1%E6%B3%89C；采集日期：2026-09-06。 single-1补录修订v2：用户于2026-09-29确认，原待确认序号38，IMG_6834.PNG；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅，到店取餐；参考单价。用户确认默认中杯；未指定温度，不将价格扩展至冰/热等细分规格。",
+      "price": {
+        "amount": 1150,
+        "currency": "CNY"
+      },
       "salesScopes": [
         "standalone",
         "offer_component"
       ],
       "status": "active",
       "createdAt": "2026-09-06T08:52:53.085816Z",
-      "updatedAt": "2026-09-06T08:52:53.085816Z"
+      "updatedAt": "2026-09-29T14:41:33.111808Z"
     },
     {
       "id": "222277885015097344",
@@ -505,14 +569,18 @@
         "麦炫酷",
         "阳光橙麦炫酷标准杯"
       ],
-      "description": "阳光橙加冰淇淋的奇妙组合。 官网营养规格：默认；本地规格：标准杯。 来源：https://www.mcdonalds.com.cn/product/Drink-16；采集日期：2026-09-06。",
+      "description": "阳光橙加冰淇淋的奇妙组合。 官网营养规格：默认；本地规格：标准杯。 来源：https://www.mcdonalds.com.cn/product/Drink-16；采集日期：2026-09-06。 参考价格来源：麦当劳点餐小程序；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅；到店取餐；截图single-1/IMG_6835.PNG；补录日期2026-09-27；截图未明确采集日期，仅作参考价格。",
+      "price": {
+        "amount": 1300,
+        "currency": "CNY"
+      },
       "salesScopes": [
         "standalone",
         "offer_component"
       ],
       "status": "active",
       "createdAt": "2026-09-06T08:53:03.216101Z",
-      "updatedAt": "2026-09-06T08:53:03.216101Z"
+      "updatedAt": "2026-09-27T15:10:17.919171Z"
     },
     {
       "id": "222277929734766592",
@@ -524,14 +592,18 @@
         "黄金橙橙",
         "美汁源黄金橙橙"
       ],
-      "description": "维他命+纤维，营养就要新鲜的。 官网营养规格：中；本地规格：中杯。 来源：https://www.mcdonalds.com.cn/product/Minute-Maid-Sunshine-Orange-Juice-2；采集日期：2026-09-06。",
+      "description": "维他命+纤维，营养就要新鲜的。 官网营养规格：中；本地规格：中杯。 来源：https://www.mcdonalds.com.cn/product/Minute-Maid-Sunshine-Orange-Juice-2；采集日期：2026-09-06。 参考价格来源：麦当劳点餐小程序；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅；到店取餐；截图single-1/IMG_6835.PNG；补录日期2026-09-27；截图未明确采集日期，仅作参考价格。",
+      "price": {
+        "amount": 1300,
+        "currency": "CNY"
+      },
       "salesScopes": [
         "standalone",
         "offer_component"
       ],
       "status": "active",
       "createdAt": "2026-09-06T08:53:08.175267Z",
-      "updatedAt": "2026-09-06T08:53:08.175267Z"
+      "updatedAt": "2026-09-27T15:10:17.903706Z"
     },
     {
       "id": "222277949997449216",
@@ -543,14 +615,18 @@
         "苹果汁",
         "盒装苹果汁"
       ],
-      "description": "100%苹果汁，纸盒包装。 官网营养规格：1盒；本地规格：1盒。 来源：https://www.mcdonalds.com.cn/product/Minute-Maid-100-Apple-Juice；采集日期：2026-09-06。",
+      "description": "100%苹果汁，纸盒包装。 官网营养规格：1盒；本地规格：1盒。 来源：https://www.mcdonalds.com.cn/product/Minute-Maid-100-Apple-Juice；采集日期：2026-09-06。 参考价格来源：麦当劳点餐小程序；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅；到店取餐；截图single-1/IMG_6836.PNG；补录日期2026-09-27；截图未明确采集日期，仅作参考价格。",
+      "price": {
+        "amount": 1200,
+        "currency": "CNY"
+      },
       "salesScopes": [
         "standalone",
         "offer_component"
       ],
       "status": "active",
       "createdAt": "2026-09-06T08:53:13.00591Z",
-      "updatedAt": "2026-09-06T08:53:13.00591Z"
+      "updatedAt": "2026-09-27T15:10:17.940874Z"
     },
     {
       "id": "222277966170685440",
@@ -600,14 +676,18 @@
         "纯牛奶",
         "盒装纯牛奶"
       ],
-      "description": "喝牛奶，长高高。 官网营养规格：默认；本地规格：1盒。 来源：https://www.mcdonalds.com.cn/product/Drink-11；采集日期：2026-09-06。",
+      "description": "喝牛奶，长高高。 官网营养规格：默认；本地规格：1盒。 来源：https://www.mcdonalds.com.cn/product/Drink-11；采集日期：2026-09-06。 参考价格来源：麦当劳点餐小程序；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅；到店取餐；截图single-1/IMG_6835.PNG；补录日期2026-09-27；截图未明确采集日期，仅作参考价格。",
+      "price": {
+        "amount": 1100,
+        "currency": "CNY"
+      },
       "salesScopes": [
         "standalone",
         "offer_component"
       ],
       "status": "active",
       "createdAt": "2026-09-06T08:53:32.266778Z",
-      "updatedAt": "2026-09-06T08:53:32.266778Z"
+      "updatedAt": "2026-09-27T15:10:17.931011Z"
     },
     {
       "id": "222278048546816000",
@@ -619,14 +699,18 @@
         "热红茶",
         "锡兰热红茶"
       ],
-      "description": "香浓热红茶，给你全天醒神暖意﹗ 官网营养规格：默认；本地规格：标准杯。 来源：https://www.mcdonalds.com.cn/product/Hot-Tea；采集日期：2026-09-06。",
+      "description": "香浓热红茶，给你全天醒神暖意﹗ 官网营养规格：默认；本地规格：标准杯。 来源：https://www.mcdonalds.com.cn/product/Hot-Tea；采集日期：2026-09-06。 参考价格来源：麦当劳点餐小程序；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅；到店取餐；截图single-1/IMG_6836.PNG；补录日期2026-09-27；截图未明确采集日期，仅作参考价格。",
+      "price": {
+        "amount": 1150,
+        "currency": "CNY"
+      },
       "salesScopes": [
         "standalone",
         "offer_component"
       ],
       "status": "active",
       "createdAt": "2026-09-06T08:53:36.501801Z",
-      "updatedAt": "2026-09-06T08:53:36.501801Z"
+      "updatedAt": "2026-09-27T15:10:17.958055Z"
     },
     {
       "id": "222278067144359936",
@@ -638,14 +722,18 @@
         "纯悦饮用水",
         "瓶装水"
       ],
-      "description": "多喝水，促代谢。 官网营养规格：默认；本地规格：1瓶。 来源：https://www.mcdonalds.com.cn/product/Drinking-Water-2；采集日期：2026-09-06。",
+      "description": "多喝水，促代谢。 官网营养规格：默认；本地规格：1瓶。 来源：https://www.mcdonalds.com.cn/product/Drinking-Water-2；采集日期：2026-09-06。 参考价格来源：麦当劳点餐小程序；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅；到店取餐；截图single-1/IMG_6836.PNG；补录日期2026-09-27；截图未明确采集日期，仅作参考价格。",
+      "price": {
+        "amount": 750,
+        "currency": "CNY"
+      },
       "salesScopes": [
         "standalone",
         "offer_component"
       ],
       "status": "active",
       "createdAt": "2026-09-06T08:53:40.935458Z",
-      "updatedAt": "2026-09-06T08:53:40.935458Z"
+      "updatedAt": "2026-09-27T15:10:17.950504Z"
     },
     {
       "id": "222280191026659328",
@@ -676,14 +764,18 @@
         "小薯",
         "小份薯条"
       ],
-      "description": "精选优质土豆，表面微脆，内里绵软，用少许盐调味，美味无人能挡！ 官网营养规格：小；本地规格：小份。 来源：https://www.mcdonalds.com.cn/product/French-Fries；采集日期：2026-09-06。",
+      "description": "精选优质土豆，表面微脆，内里绵软，用少许盐调味，美味无人能挡！ 官网营养规格：小；本地规格：小份。 来源：https://www.mcdonalds.com.cn/product/French-Fries；采集日期：2026-09-06。 single-1补录修订v2：用户于2026-09-29确认，原待确认序号15，IMG_6829.PNG；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅，到店取餐；参考单价。",
+      "price": {
+        "amount": 1100,
+        "currency": "CNY"
+      },
       "salesScopes": [
         "standalone",
         "offer_component"
       ],
       "status": "active",
       "createdAt": "2026-09-06T09:02:12.688798Z",
-      "updatedAt": "2026-09-06T09:02:12.688798Z"
+      "updatedAt": "2026-09-29T14:41:32.758677Z"
     },
     {
       "id": "222280443045609472",
@@ -695,14 +787,18 @@
         "中薯",
         "中份薯条"
       ],
-      "description": "精选优质土豆，表面微脆，内里绵软，用少许盐调味，美味无人能挡！ 官网营养规格：中；本地规格：中份。 来源：https://www.mcdonalds.com.cn/product/French-Fries；采集日期：2026-09-06。",
+      "description": "精选优质土豆，表面微脆，内里绵软，用少许盐调味，美味无人能挡！ 官网营养规格：中；本地规格：中份。 来源：https://www.mcdonalds.com.cn/product/French-Fries；采集日期：2026-09-06。 single-1补录修订v2：用户于2026-09-29确认，原待确认序号15，IMG_6829.PNG；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅，到店取餐；参考单价。",
+      "price": {
+        "amount": 1450,
+        "currency": "CNY"
+      },
       "salesScopes": [
         "standalone",
         "offer_component"
       ],
       "status": "active",
       "createdAt": "2026-09-06T09:03:07.394701Z",
-      "updatedAt": "2026-09-06T09:03:07.394701Z"
+      "updatedAt": "2026-09-29T14:41:32.772037Z"
     },
     {
       "id": "222280464021323776",
@@ -714,14 +810,18 @@
         "大薯",
         "大份薯条"
       ],
-      "description": "精选优质土豆，表面微脆，内里绵软，用少许盐调味，美味无人能挡！ 官网营养规格：大；本地规格：大份。 来源：https://www.mcdonalds.com.cn/product/French-Fries；采集日期：2026-09-06。",
+      "description": "精选优质土豆，表面微脆，内里绵软，用少许盐调味，美味无人能挡！ 官网营养规格：大；本地规格：大份。 来源：https://www.mcdonalds.com.cn/product/French-Fries；采集日期：2026-09-06。 single-1补录修订v2：用户于2026-09-29确认，原待确认序号15，IMG_6829.PNG；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅，到店取餐；参考单价。",
+      "price": {
+        "amount": 1600,
+        "currency": "CNY"
+      },
       "salesScopes": [
         "standalone",
         "offer_component"
       ],
       "status": "active",
       "createdAt": "2026-09-06T09:03:12.395298Z",
-      "updatedAt": "2026-09-06T09:03:12.395298Z"
+      "updatedAt": "2026-09-29T14:41:32.787084Z"
     },
     {
       "id": "222280485013815296",
@@ -751,14 +851,18 @@
         "麦辣鸡翅2块",
         "1对麦辣鸡翅"
       ],
-      "description": "精选优质白羽鸡翅，火辣惹味，刺激滋味瞬间爆棚。 官网营养规格：2块；本地规格：2块。 来源：https://www.mcdonalds.com.cn/product/Spicy-McWings；采集日期：2026-09-06。",
+      "description": "精选优质白羽鸡翅，火辣惹味，刺激滋味瞬间爆棚。 官网营养规格：2块；本地规格：2块。 来源：https://www.mcdonalds.com.cn/product/Spicy-McWings；采集日期：2026-09-06。 single-1补录修订v2：用户于2026-09-29确认，原待确认序号5，IMG_6826.PNG；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅，到店取餐；参考单价。",
+      "price": {
+        "amount": 1450,
+        "currency": "CNY"
+      },
       "salesScopes": [
         "standalone",
         "offer_component"
       ],
       "status": "active",
       "createdAt": "2026-09-06T09:03:23.192807Z",
-      "updatedAt": "2026-09-06T09:03:23.192807Z"
+      "updatedAt": "2026-09-29T14:41:32.586337Z"
     },
     {
       "id": "222280533986508800",
@@ -770,14 +874,18 @@
         "V翅",
         "2块薄皮焦香V翅"
       ],
-      "description": "薄皮锁汁，鸡肉嫩滑，以熟成番茄带来酸甜鲜美的茄仔风味。 官网营养规格：2块；本地规格：2块。 来源：https://www.mcdonalds.com.cn/product/20250326-V-wings；采集日期：2026-09-06。",
+      "description": "薄皮锁汁，鸡肉嫩滑，以熟成番茄带来酸甜鲜美的茄仔风味。 官网营养规格：2块；本地规格：2块。 来源：https://www.mcdonalds.com.cn/product/20250326-V-wings；采集日期：2026-09-06。 参考价格来源：麦当劳点餐小程序；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅；到店取餐；截图single-1/IMG_6826.PNG；补录日期2026-09-27；截图未明确采集日期，仅作参考价格。",
+      "price": {
+        "amount": 1550,
+        "currency": "CNY"
+      },
       "salesScopes": [
         "standalone",
         "offer_component"
       ],
       "status": "active",
       "createdAt": "2026-09-06T09:03:29.076759Z",
-      "updatedAt": "2026-09-06T09:03:29.076759Z"
+      "updatedAt": "2026-09-27T15:10:17.859861Z"
     },
     {
       "id": "222280557709492224",
@@ -789,14 +897,18 @@
         "麦乐鸡",
         "5块麦乐鸡"
       ],
-      "description": "严格挑选优质鸡肉，外皮金黄酥脆，鸡肉嫩滑多汁，配以秘制蘸酱。 官网营养规格：5块；本地规格：5块。 来源：https://www.mcdonalds.com.cn/product/Chicken-McNuggets；采集日期：2026-09-06。",
+      "description": "严格挑选优质鸡肉，外皮金黄酥脆，鸡肉嫩滑多汁，配以秘制蘸酱。 官网营养规格：5块；本地规格：5块。 来源：https://www.mcdonalds.com.cn/product/Chicken-McNuggets；采集日期：2026-09-06。 single-1补录修订v2：用户于2026-09-29确认，原待确认序号6，IMG_6826.PNG；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅，到店取餐；参考单价。5块15.5元覆盖图片识别14.5元。",
+      "price": {
+        "amount": 1550,
+        "currency": "CNY"
+      },
       "salesScopes": [
         "standalone",
         "offer_component"
       ],
       "status": "active",
       "createdAt": "2026-09-06T09:03:34.733238Z",
-      "updatedAt": "2026-09-06T09:03:34.733238Z"
+      "updatedAt": "2026-09-29T14:41:32.628278Z"
     },
     {
       "id": "222280589548453888",
@@ -827,14 +939,18 @@
         "小玉米杯",
         "小杯玉米"
       ],
-      "description": "粒粒饱满，颗颗多汁，香甜爽口。 官网营养规格：小；本地规格：小杯。 来源：https://www.mcdonalds.com.cn/product/Corn-Cup；采集日期：2026-09-06。",
+      "description": "粒粒饱满，颗颗多汁，香甜爽口。 官网营养规格：小；本地规格：小杯。 来源：https://www.mcdonalds.com.cn/product/Corn-Cup；采集日期：2026-09-06。 single-1补录修订v2：用户于2026-09-29确认，原待确认序号16，IMG_6829.PNG；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅，到店取餐；参考单价。用户小份/大份对应目录小杯/大杯。",
+      "price": {
+        "amount": 1300,
+        "currency": "CNY"
+      },
       "salesScopes": [
         "standalone",
         "offer_component"
       ],
       "status": "active",
       "createdAt": "2026-09-06T09:03:47.677065Z",
-      "updatedAt": "2026-09-06T09:03:47.677065Z"
+      "updatedAt": "2026-09-29T14:41:32.800642Z"
     },
     {
       "id": "222280640446332928",
@@ -846,14 +962,18 @@
         "大玉米杯",
         "大杯玉米"
       ],
-      "description": "粒粒饱满，颗颗多汁，香甜爽口。 官网营养规格：大；本地规格：大杯。 来源：https://www.mcdonalds.com.cn/product/Corn-Cup；采集日期：2026-09-06。",
+      "description": "粒粒饱满，颗颗多汁，香甜爽口。 官网营养规格：大；本地规格：大杯。 来源：https://www.mcdonalds.com.cn/product/Corn-Cup；采集日期：2026-09-06。 single-1补录修订v2：用户于2026-09-29确认，原待确认序号16，IMG_6829.PNG；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅，到店取餐；参考单价。用户小份/大份对应目录小杯/大杯。",
+      "price": {
+        "amount": 1550,
+        "currency": "CNY"
+      },
       "salesScopes": [
         "standalone",
         "offer_component"
       ],
       "status": "active",
       "createdAt": "2026-09-06T09:03:54.458795Z",
-      "updatedAt": "2026-09-06T09:03:54.458795Z"
+      "updatedAt": "2026-09-29T14:41:32.81369Z"
     },
     {
       "id": "222280660897759232",
@@ -883,14 +1003,18 @@
         "甜筒",
         "圆筒"
       ],
-      "description": "醇香细腻的冰淇淋搭配香脆圆筒，将清甜与松脆一口咬下！ 官网营养规格：1个。 来源：https://www.mcdonalds.com.cn/product/Cone；采集日期：2026-09-06。",
+      "description": "醇香细腻的冰淇淋搭配香脆圆筒，将清甜与松脆一口咬下！ 官网营养规格：1个。 来源：https://www.mcdonalds.com.cn/product/Cone；采集日期：2026-09-06。 参考价格来源：麦当劳点餐小程序；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅；到店取餐；截图single-1/IMG_6830.PNG；补录日期2026-09-27；截图未明确采集日期，仅作参考价格。",
+      "price": {
+        "amount": 500,
+        "currency": "CNY"
+      },
       "salesScopes": [
         "standalone",
         "offer_component"
       ],
       "status": "active",
       "createdAt": "2026-09-06T09:06:36.099223Z",
-      "updatedAt": "2026-09-06T09:06:36.099223Z"
+      "updatedAt": "2026-09-27T15:10:17.893635Z"
     },
     {
       "id": "222281342430216192",
@@ -902,14 +1026,18 @@
         "麦旋风",
         "奥利奥麦旋风1个"
       ],
-      "description": "冰淇淋的香滑与奥利奥饼干的香酥融为一体，奇妙黑白搭配。 官网营养规格：1个。 来源：https://www.mcdonalds.com.cn/product/Oreo-Mcflurry；采集日期：2026-09-06。",
+      "description": "冰淇淋的香滑与奥利奥饼干的香酥融为一体，奇妙黑白搭配。 官网营养规格：1个。 来源：https://www.mcdonalds.com.cn/product/Oreo-Mcflurry；采集日期：2026-09-06。 single-1补录修订v2：用户于2026-09-29确认，原待确认序号18，IMG_6829.PNG；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅，到店取餐；参考单价。",
+      "price": {
+        "amount": 1450,
+        "currency": "CNY"
+      },
       "salesScopes": [
         "standalone",
         "offer_component"
       ],
       "status": "active",
       "createdAt": "2026-09-06T09:06:41.824913Z",
-      "updatedAt": "2026-09-06T09:06:41.824913Z"
+      "updatedAt": "2026-09-29T14:41:32.827187Z"
     },
     {
       "id": "222281366576824320",
@@ -920,14 +1048,18 @@
       "aliases": [
         "草莓奥利奥麦旋风"
       ],
-      "description": "香滑冰淇淋与奥利奥饼干融合，再加入草莓酱，口味清新。 官网营养规格：1个。 来源：https://www.mcdonalds.com.cn/product/Strawberry-Oreo-Mcflurry；采集日期：2026-09-06。",
+      "description": "香滑冰淇淋与奥利奥饼干融合，再加入草莓酱，口味清新。 官网营养规格：1个。 来源：https://www.mcdonalds.com.cn/product/Strawberry-Oreo-Mcflurry；采集日期：2026-09-06。 single-1补录修订v2：用户于2026-09-29确认，原待确认序号18，IMG_6829.PNG；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅，到店取餐；参考单价。",
+      "price": {
+        "amount": 1450,
+        "currency": "CNY"
+      },
       "salesScopes": [
         "standalone",
         "offer_component"
       ],
       "status": "active",
       "createdAt": "2026-09-06T09:06:47.582502Z",
-      "updatedAt": "2026-09-06T09:06:47.582502Z"
+      "updatedAt": "2026-09-29T14:41:32.841051Z"
     },
     {
       "id": "222281394540249088",
@@ -938,14 +1070,18 @@
       "aliases": [
         "巧克力新地"
       ],
-      "description": "醇香细腻的冰淇淋搭配香醇丝滑的朱古力酱。 官网营养规格：1个。 来源：https://www.mcdonalds.com.cn/product/Chocolate-Sundae；采集日期：2026-09-06。",
+      "description": "醇香细腻的冰淇淋搭配香醇丝滑的朱古力酱。 官网营养规格：1个。 来源：https://www.mcdonalds.com.cn/product/Chocolate-Sundae；采集日期：2026-09-06。 single-1补录修订v2：用户于2026-09-29确认，原待确认序号19，IMG_6830.PNG；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅，到店取餐；参考单价。",
+      "price": {
+        "amount": 1200,
+        "currency": "CNY"
+      },
       "salesScopes": [
         "standalone",
         "offer_component"
       ],
       "status": "active",
       "createdAt": "2026-09-06T09:06:54.248302Z",
-      "updatedAt": "2026-09-06T09:06:54.248302Z"
+      "updatedAt": "2026-09-29T14:41:32.85457Z"
     },
     {
       "id": "222281416329658368",
@@ -956,14 +1092,18 @@
       "aliases": [
         "草莓圣代"
       ],
-      "description": "醇香细腻的冰淇淋搭配鲜嫩可口的草莓酱。 官网营养规格：1个。 来源：https://www.mcdonalds.com.cn/product/Strawberry-Sundae；采集日期：2026-09-06。",
+      "description": "醇香细腻的冰淇淋搭配鲜嫩可口的草莓酱。 官网营养规格：1个。 来源：https://www.mcdonalds.com.cn/product/Strawberry-Sundae；采集日期：2026-09-06。 single-1补录修订v2：用户于2026-09-29确认，原待确认序号19，IMG_6830.PNG；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅，到店取餐；参考单价。",
+      "price": {
+        "amount": 1200,
+        "currency": "CNY"
+      },
       "salesScopes": [
         "standalone",
         "offer_component"
       ],
       "status": "active",
       "createdAt": "2026-09-06T09:06:59.44504Z",
-      "updatedAt": "2026-09-06T09:06:59.44504Z"
+      "updatedAt": "2026-09-29T14:41:32.86863Z"
     },
     {
       "id": "222281443265478656",
@@ -1010,14 +1150,18 @@
       "aliases": [
         "芋头派"
       ],
-      "description": "软软的夹心搭配脆脆的外壳。 官网营养规格：1个。 来源：https://www.mcdonalds.com.cn/product/Taro-Pie；采集日期：2026-09-06。",
+      "description": "软软的夹心搭配脆脆的外壳。 官网营养规格：1个。 来源：https://www.mcdonalds.com.cn/product/Taro-Pie；采集日期：2026-09-06。 single-1补录修订v2：用户于2026-09-29确认，原待确认序号20，IMG_6830.PNG；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅，到店取餐；参考单价。",
+      "price": {
+        "amount": 850,
+        "currency": "CNY"
+      },
       "salesScopes": [
         "standalone",
         "offer_component"
       ],
       "status": "active",
       "createdAt": "2026-09-06T09:07:17.133394Z",
-      "updatedAt": "2026-09-06T09:07:17.133394Z"
+      "updatedAt": "2026-09-29T14:41:32.895548Z"
     },
     {
       "id": "222281512379219968",
@@ -1028,14 +1172,18 @@
       "aliases": [
         "凤梨派"
       ],
-      "description": "软软的夹心搭配脆脆的外壳。 官网营养规格：1个。 来源：https://www.mcdonalds.com.cn/product/Pineapple-Pie；采集日期：2026-09-06。",
+      "description": "软软的夹心搭配脆脆的外壳。 官网营养规格：1个。 来源：https://www.mcdonalds.com.cn/product/Pineapple-Pie；采集日期：2026-09-06。 single-1补录修订v2：用户于2026-09-29确认，原待确认序号20，IMG_6830.PNG；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅，到店取餐；参考单价。",
+      "price": {
+        "amount": 850,
+        "currency": "CNY"
+      },
       "salesScopes": [
         "standalone",
         "offer_component"
       ],
       "status": "active",
       "createdAt": "2026-09-06T09:07:22.34338Z",
-      "updatedAt": "2026-09-06T09:07:22.34338Z"
+      "updatedAt": "2026-09-29T14:41:32.881821Z"
     },
     {
       "id": "222319960532189184",
@@ -1310,13 +1458,17 @@
       "aliases": [
         "薯饼"
       ],
-      "description": "套餐可选单品；来源：用户提供的“椰香大脆鸡扒早餐4+2”团购页面截图，采集日期：2026-09-06。",
+      "description": "套餐可选单品；来源：用户提供的“椰香大脆鸡扒早餐4+2”团购页面截图，采集日期：2026-09-06。 参考价格来源：麦当劳点餐小程序；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅；到店取餐；截图single-1/IMG_6829.PNG；补录日期2026-09-27；截图未明确采集日期，仅作参考价格。",
+      "price": {
+        "amount": 850,
+        "currency": "CNY"
+      },
       "salesScopes": [
         "offer_component"
       ],
       "status": "active",
       "createdAt": "2026-09-06T12:00:05.059416Z",
-      "updatedAt": "2026-09-06T12:00:05.059416Z"
+      "updatedAt": "2026-09-27T15:10:17.883889Z"
     },
     {
       "id": "222324976844275712",
@@ -1472,12 +1624,17 @@
       "name": "月下相思扭扭薯条",
       "specification": "1份",
       "aliases": [],
+      "description": "参考价格来源：麦当劳点餐小程序；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅；到店取餐；截图single-1/IMG_6827.PNG；补录日期2026-09-27；截图未明确采集日期，仅作参考价格。",
+      "price": {
+        "amount": 1600,
+        "currency": "CNY"
+      },
       "salesScopes": [
         "offer_component"
       ],
       "status": "active",
       "createdAt": "2026-09-27T07:06:17.241337Z",
-      "updatedAt": "2026-09-27T07:06:17.241337Z"
+      "updatedAt": "2026-09-27T15:10:17.876084Z"
     },
     {
       "id": "229861185543995393",
@@ -1524,12 +1681,17 @@
       "name": "那么大鸡排（椒盐风味）",
       "specification": "1个",
       "aliases": [],
+      "description": "参考价格来源：麦当劳点餐小程序；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅；到店取餐；截图single-1/IMG_6826.PNG；补录日期2026-09-27；截图未明确采集日期，仅作参考价格。",
+      "price": {
+        "amount": 1400,
+        "currency": "CNY"
+      },
       "salesScopes": [
         "offer_component"
       ],
       "status": "active",
       "createdAt": "2026-09-27T09:58:45.215086Z",
-      "updatedAt": "2026-09-27T09:58:45.215086Z"
+      "updatedAt": "2026-09-27T15:10:17.868518Z"
     },
     {
       "id": "229904588285673473",
@@ -1641,12 +1803,18 @@
       "name": "泷愿成真麦旋风——大米风味",
       "specification": "1个",
       "aliases": [],
+      "description": "single-1补录修订v2：用户于2026-09-29确认，原待确认序号1，IMG_6819.PNG；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅，到店取餐；参考单价。",
+      "price": {
+        "amount": 1550,
+        "currency": "CNY"
+      },
       "salesScopes": [
+        "standalone",
         "offer_component"
       ],
       "status": "active",
       "createdAt": "2026-09-27T09:58:45.576801Z",
-      "updatedAt": "2026-09-27T09:58:45.576801Z"
+      "updatedAt": "2026-09-29T14:41:32.529594Z"
     },
     {
       "id": "229904589854343169",
@@ -1777,6 +1945,546 @@
       "status": "active",
       "createdAt": "2026-09-27T09:58:45.956699Z",
       "updatedAt": "2026-09-27T09:58:45.956699Z"
+    },
+    {
+      "id": "229982990342553600",
+      "brand": "mcd",
+      "name": "枫糖风味厚松饼猪柳堡",
+      "specification": "1个",
+      "category": "汉堡",
+      "aliases": [],
+      "description": "参考价格来源：麦当劳点餐小程序；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅；到店取餐；截图single-1/IMG_6822.PNG；补录日期2026-09-27；截图未明确采集日期，仅作参考价格。",
+      "price": {
+        "amount": 1800,
+        "currency": "CNY"
+      },
+      "salesScopes": [
+        "standalone",
+        "offer_component"
+      ],
+      "status": "active",
+      "createdAt": "2026-09-27T15:10:17.77643Z",
+      "updatedAt": "2026-09-27T15:10:17.77643Z"
+    },
+    {
+      "id": "229982990548074496",
+      "brand": "mcd",
+      "name": "高达吉士双牛堡",
+      "specification": "1个",
+      "category": "汉堡",
+      "aliases": [],
+      "description": "参考价格来源：麦当劳点餐小程序；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅；到店取餐；截图single-1/IMG_6823.PNG；补录日期2026-09-27；截图未明确采集日期，仅作参考价格。",
+      "price": {
+        "amount": 2250,
+        "currency": "CNY"
+      },
+      "salesScopes": [
+        "standalone",
+        "offer_component"
+      ],
+      "status": "active",
+      "createdAt": "2026-09-27T15:10:17.824835Z",
+      "updatedAt": "2026-09-27T15:10:17.824835Z"
+    },
+    {
+      "id": "229982990657126400",
+      "brand": "mcd",
+      "name": "马来咖喱风味薄皮肉骨鸡",
+      "specification": "3块",
+      "category": "小食",
+      "aliases": [],
+      "description": "参考价格来源：麦当劳点餐小程序；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅；到店取餐；截图single-1/IMG_6825.PNG；补录日期2026-09-27；截图未明确采集日期，仅作参考价格。",
+      "price": {
+        "amount": 1550,
+        "currency": "CNY"
+      },
+      "salesScopes": [
+        "standalone",
+        "offer_component"
+      ],
+      "status": "active",
+      "createdAt": "2026-09-27T15:10:17.850527Z",
+      "updatedAt": "2026-09-27T15:10:17.850527Z"
+    },
+    {
+      "id": "230700530198904832",
+      "brand": "mcd",
+      "name": "麦辣鸡翅",
+      "specification": "4块",
+      "category": "小食",
+      "aliases": [],
+      "description": "single-1补录修订v2：用户于2026-09-29确认，原待确认序号5，IMG_6826.PNG；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅，到店取餐；参考单价。",
+      "price": {
+        "amount": 2550,
+        "currency": "CNY"
+      },
+      "salesScopes": [
+        "standalone",
+        "offer_component"
+      ],
+      "status": "active",
+      "createdAt": "2026-09-29T14:41:32.610159Z",
+      "updatedAt": "2026-09-29T14:41:32.610159Z"
+    },
+    {
+      "id": "230700530354094080",
+      "brand": "mcd",
+      "name": "麦乐鸡",
+      "specification": "10块",
+      "category": "小食",
+      "aliases": [],
+      "description": "single-1补录修订v2：用户于2026-09-29确认，原待确认序号6，IMG_6826.PNG；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅，到店取餐；参考单价。",
+      "price": {
+        "amount": 2550,
+        "currency": "CNY"
+      },
+      "salesScopes": [
+        "standalone",
+        "offer_component"
+      ],
+      "status": "active",
+      "createdAt": "2026-09-29T14:41:32.646018Z",
+      "updatedAt": "2026-09-29T14:41:32.646018Z"
+    },
+    {
+      "id": "230700530421202944",
+      "brand": "mcd",
+      "name": "麦麦脆汁鸡",
+      "specification": "1块",
+      "category": "小食",
+      "aliases": [],
+      "description": "single-1补录修订v2：用户于2026-09-29确认，原待确认序号7，IMG_6826.PNG；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅，到店取餐；参考单价。按用户要求不区分随机部位，不改写各具体部位商品。",
+      "price": {
+        "amount": 1500,
+        "currency": "CNY"
+      },
+      "salesScopes": [
+        "standalone",
+        "offer_component"
+      ],
+      "status": "active",
+      "createdAt": "2026-09-29T14:41:32.661678Z",
+      "updatedAt": "2026-09-29T14:41:32.661678Z"
+    },
+    {
+      "id": "230700530479923200",
+      "brand": "mcd",
+      "name": "奶香大米风味圆筒",
+      "specification": "1份",
+      "category": "甜品",
+      "aliases": [],
+      "description": "single-1补录修订v2：用户于2026-09-29确认，原待确认序号9，IMG_6827.PNG；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅，到店取餐；参考单价。",
+      "price": {
+        "amount": 500,
+        "currency": "CNY"
+      },
+      "salesScopes": [
+        "standalone",
+        "offer_component"
+      ],
+      "status": "active",
+      "createdAt": "2026-09-29T14:41:32.675576Z",
+      "updatedAt": "2026-09-29T14:41:32.675576Z"
+    },
+    {
+      "id": "230700530538643456",
+      "brand": "mcd",
+      "name": "奶香大米风味双旋圆筒",
+      "specification": "1份",
+      "category": "甜品",
+      "aliases": [],
+      "description": "single-1补录修订v2：用户于2026-09-29确认，原待确认序号10，IMG_6827.PNG；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅，到店取餐；参考单价。",
+      "price": {
+        "amount": 500,
+        "currency": "CNY"
+      },
+      "salesScopes": [
+        "standalone",
+        "offer_component"
+      ],
+      "status": "active",
+      "createdAt": "2026-09-29T14:41:32.689375Z",
+      "updatedAt": "2026-09-29T14:41:32.689375Z"
+    },
+    {
+      "id": "230700530597363712",
+      "brand": "mcd",
+      "name": "奶香大米风味新地（朱古力）",
+      "specification": "1份",
+      "category": "甜品",
+      "aliases": [],
+      "description": "single-1补录修订v2：用户于2026-09-29确认，原待确认序号11，IMG_6828.PNG；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅，到店取餐；参考单价。",
+      "price": {
+        "amount": 1300,
+        "currency": "CNY"
+      },
+      "salesScopes": [
+        "standalone",
+        "offer_component"
+      ],
+      "status": "active",
+      "createdAt": "2026-09-29T14:41:32.704029Z",
+      "updatedAt": "2026-09-29T14:41:32.704029Z"
+    },
+    {
+      "id": "230700530656083968",
+      "brand": "mcd",
+      "name": "奶香大米风味新地（草莓）",
+      "specification": "1份",
+      "category": "甜品",
+      "aliases": [],
+      "description": "single-1补录修订v2：用户于2026-09-29确认，原待确认序号12，IMG_6828.PNG；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅，到店取餐；参考单价。",
+      "price": {
+        "amount": 1300,
+        "currency": "CNY"
+      },
+      "salesScopes": [
+        "standalone",
+        "offer_component"
+      ],
+      "status": "active",
+      "createdAt": "2026-09-29T14:41:32.717645Z",
+      "updatedAt": "2026-09-29T14:41:32.717645Z"
+    },
+    {
+      "id": "230700530710609920",
+      "brand": "mcd",
+      "name": "柠檬脆脆麦旋风",
+      "specification": "1份",
+      "category": "甜品",
+      "aliases": [],
+      "description": "single-1补录修订v2：用户于2026-09-29确认，原待确认序号13，IMG_6828.PNG；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅，到店取餐；参考单价。",
+      "price": {
+        "amount": 1550,
+        "currency": "CNY"
+      },
+      "salesScopes": [
+        "standalone",
+        "offer_component"
+      ],
+      "status": "active",
+      "createdAt": "2026-09-29T14:41:32.731115Z",
+      "updatedAt": "2026-09-29T14:41:32.731115Z"
+    },
+    {
+      "id": "230700530773524480",
+      "brand": "mcd",
+      "name": "泷盐星星麦旋风",
+      "specification": "1份",
+      "category": "甜品",
+      "aliases": [],
+      "description": "single-1补录修订v2：用户于2026-09-29确认，原待确认序号17，IMG_6829.PNG；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅，到店取餐；参考单价。",
+      "price": {
+        "amount": 1550,
+        "currency": "CNY"
+      },
+      "salesScopes": [
+        "standalone",
+        "offer_component"
+      ],
+      "status": "active",
+      "createdAt": "2026-09-29T14:41:32.745521Z",
+      "updatedAt": "2026-09-29T14:41:32.745521Z"
+    },
+    {
+      "id": "230700531457196032",
+      "brand": "mcd",
+      "name": "麦咖啡™美式",
+      "specification": "中杯",
+      "category": "饮品",
+      "aliases": [],
+      "description": "single-1补录修订v2：用户于2026-09-29确认，原待确认序号21，IMG_6830.PNG；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅，到店取餐；参考单价。用户确认默认中杯；未指定温度，不将价格扩展至冰/热等细分规格。",
+      "price": {
+        "amount": 1190,
+        "currency": "CNY"
+      },
+      "salesScopes": [
+        "standalone",
+        "offer_component"
+      ],
+      "status": "active",
+      "createdAt": "2026-09-29T14:41:32.90902Z",
+      "updatedAt": "2026-09-29T14:41:32.90902Z"
+    },
+    {
+      "id": "230700531511721984",
+      "brand": "mcd",
+      "name": "麦咖啡™奶铁",
+      "specification": "中杯",
+      "category": "饮品",
+      "aliases": [],
+      "description": "single-1补录修订v2：用户于2026-09-29确认，原待确认序号22，IMG_6831.PNG；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅，到店取餐；参考单价。用户确认默认中杯；未指定温度，不将价格扩展至冰/热等细分规格。",
+      "price": {
+        "amount": 1390,
+        "currency": "CNY"
+      },
+      "salesScopes": [
+        "standalone",
+        "offer_component"
+      ],
+      "status": "active",
+      "createdAt": "2026-09-29T14:41:32.921263Z",
+      "updatedAt": "2026-09-29T14:41:32.921263Z"
+    },
+    {
+      "id": "230700531566247936",
+      "brand": "mcd",
+      "name": "卡布奇诺",
+      "specification": "中杯",
+      "category": "饮品",
+      "aliases": [],
+      "description": "single-1补录修订v2：用户于2026-09-29确认，原待确认序号24，IMG_6831.PNG；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅，到店取餐；参考单价。用户确认默认中杯；未指定温度，不将价格扩展至冰/热等细分规格。原图第二份半价条件保留；本次仅录入单杯价，不推断寄存规则。",
+      "price": {
+        "amount": 2100,
+        "currency": "CNY"
+      },
+      "salesScopes": [
+        "standalone",
+        "offer_component"
+      ],
+      "status": "active",
+      "createdAt": "2026-09-29T14:41:32.934523Z",
+      "updatedAt": "2026-09-29T14:41:32.934523Z"
+    },
+    {
+      "id": "230700531616579584",
+      "brand": "mcd",
+      "name": "奶铁雪冰",
+      "specification": "中杯",
+      "category": "饮品",
+      "aliases": [],
+      "description": "single-1补录修订v2：用户于2026-09-29确认，原待确认序号25，IMG_6831.PNG；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅，到店取餐；参考单价。用户确认默认中杯；未指定温度，不将价格扩展至冰/热等细分规格。原图第二份半价条件保留；本次仅录入单杯价，不推断寄存规则。",
+      "price": {
+        "amount": 2300,
+        "currency": "CNY"
+      },
+      "salesScopes": [
+        "standalone",
+        "offer_component"
+      ],
+      "status": "active",
+      "createdAt": "2026-09-29T14:41:32.946355Z",
+      "updatedAt": "2026-09-29T14:41:32.946355Z"
+    },
+    {
+      "id": "230700531662716928",
+      "brand": "mcd",
+      "name": "咖啡阿芙佳朵",
+      "specification": "中杯",
+      "category": "饮品",
+      "aliases": [],
+      "description": "single-1补录修订v2：用户于2026-09-29确认，原待确认序号26，IMG_6832.PNG；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅，到店取餐；参考单价。用户确认默认中杯；未指定温度，不将价格扩展至冰/热等细分规格。原图第二份半价条件保留；本次仅录入单杯价，不推断寄存规则。",
+      "price": {
+        "amount": 1500,
+        "currency": "CNY"
+      },
+      "salesScopes": [
+        "standalone",
+        "offer_component"
+      ],
+      "status": "active",
+      "createdAt": "2026-09-29T14:41:32.958334Z",
+      "updatedAt": "2026-09-29T14:41:32.958334Z"
+    },
+    {
+      "id": "230700531717242880",
+      "brand": "mcd",
+      "name": "鲜萃咖啡",
+      "specification": "中杯",
+      "category": "饮品",
+      "aliases": [],
+      "description": "single-1补录修订v2：用户于2026-09-29确认，原待确认序号27，IMG_6832.PNG；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅，到店取餐；参考单价。用户确认默认中杯；未指定温度，不将价格扩展至冰/热等细分规格。",
+      "price": {
+        "amount": 950,
+        "currency": "CNY"
+      },
+      "salesScopes": [
+        "standalone",
+        "offer_component"
+      ],
+      "status": "active",
+      "createdAt": "2026-09-29T14:41:32.971251Z",
+      "updatedAt": "2026-09-29T14:41:32.971251Z"
+    },
+    {
+      "id": "230700531767574528",
+      "brand": "mcd",
+      "name": "浓缩咖啡",
+      "specification": "中杯",
+      "category": "饮品",
+      "aliases": [],
+      "description": "single-1补录修订v2：用户于2026-09-29确认，原待确认序号28，IMG_6832.PNG；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅，到店取餐；参考单价。用户确认默认中杯；未指定温度，不将价格扩展至冰/热等细分规格。",
+      "price": {
+        "amount": 1500,
+        "currency": "CNY"
+      },
+      "salesScopes": [
+        "standalone",
+        "offer_component"
+      ],
+      "status": "active",
+      "createdAt": "2026-09-29T14:41:32.983192Z",
+      "updatedAt": "2026-09-29T14:41:32.983192Z"
+    },
+    {
+      "id": "230700531822100480",
+      "brand": "mcd",
+      "name": "浓浓黑巧",
+      "specification": "中杯",
+      "category": "饮品",
+      "aliases": [],
+      "description": "single-1补录修订v2：用户于2026-09-29确认，原待确认序号29，IMG_6832.PNG；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅，到店取餐；参考单价。用户确认默认中杯；未指定温度，不将价格扩展至冰/热等细分规格。原图第二份半价条件保留；本次仅录入单杯价，不推断寄存规则。",
+      "price": {
+        "amount": 2100,
+        "currency": "CNY"
+      },
+      "salesScopes": [
+        "standalone",
+        "offer_component"
+      ],
+      "status": "active",
+      "createdAt": "2026-09-29T14:41:32.995563Z",
+      "updatedAt": "2026-09-29T14:41:32.995563Z"
+    },
+    {
+      "id": "230700531868237824",
+      "brand": "mcd",
+      "name": "浓浓燕麦黑巧",
+      "specification": "中杯",
+      "category": "饮品",
+      "aliases": [],
+      "description": "single-1补录修订v2：用户于2026-09-29确认，原待确认序号30，IMG_6833.PNG；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅，到店取餐；参考单价。用户确认默认中杯；未指定温度，不将价格扩展至冰/热等细分规格。原图第二份半价条件保留；本次仅录入单杯价，不推断寄存规则。",
+      "price": {
+        "amount": 2300,
+        "currency": "CNY"
+      },
+      "salesScopes": [
+        "standalone",
+        "offer_component"
+      ],
+      "status": "active",
+      "createdAt": "2026-09-29T14:41:33.007059Z",
+      "updatedAt": "2026-09-29T14:41:33.007059Z"
+    },
+    {
+      "id": "230700531922763776",
+      "brand": "mcd",
+      "name": "浓浓黑巧雪冰",
+      "specification": "中杯",
+      "category": "饮品",
+      "aliases": [],
+      "description": "single-1补录修订v2：用户于2026-09-29确认，原待确认序号31，IMG_6833.PNG；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅，到店取餐；参考单价。用户确认默认中杯；未指定温度，不将价格扩展至冰/热等细分规格。原图第二份半价条件保留；本次仅录入单杯价，不推断寄存规则。",
+      "price": {
+        "amount": 2300,
+        "currency": "CNY"
+      },
+      "salesScopes": [
+        "standalone",
+        "offer_component"
+      ],
+      "status": "active",
+      "createdAt": "2026-09-29T14:41:33.019895Z",
+      "updatedAt": "2026-09-29T14:41:33.019895Z"
+    },
+    {
+      "id": "230700531973095424",
+      "brand": "mcd",
+      "name": "牛奶",
+      "specification": "中杯",
+      "category": "饮品",
+      "aliases": [],
+      "description": "single-1补录修订v2：用户于2026-09-29确认，原待确认序号32，IMG_6833.PNG；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅，到店取餐；参考单价。用户确认默认中杯；未指定温度，不将价格扩展至冰/热等细分规格。原图第二份半价条件保留；本次仅录入单杯价，不推断寄存规则。",
+      "price": {
+        "amount": 1900,
+        "currency": "CNY"
+      },
+      "salesScopes": [
+        "standalone",
+        "offer_component"
+      ],
+      "status": "active",
+      "createdAt": "2026-09-29T14:41:33.031449Z",
+      "updatedAt": "2026-09-29T14:41:33.031449Z"
+    },
+    {
+      "id": "230700532031815680",
+      "brand": "mcd",
+      "name": "燕麦奶",
+      "specification": "中杯",
+      "category": "饮品",
+      "aliases": [],
+      "description": "single-1补录修订v2：用户于2026-09-29确认，原待确认序号33，IMG_6833.PNG；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅，到店取餐；参考单价。用户确认默认中杯；未指定温度，不将价格扩展至冰/热等细分规格。原图第二份半价条件保留；本次仅录入单杯价，不推断寄存规则。",
+      "price": {
+        "amount": 2100,
+        "currency": "CNY"
+      },
+      "salesScopes": [
+        "standalone",
+        "offer_component"
+      ],
+      "status": "active",
+      "createdAt": "2026-09-29T14:41:33.045845Z",
+      "updatedAt": "2026-09-29T14:41:33.045845Z"
+    },
+    {
+      "id": "230700532082147328",
+      "brand": "mcd",
+      "name": "举杯邀月柚桂茶",
+      "specification": "中杯",
+      "category": "饮品",
+      "aliases": [],
+      "description": "single-1补录修订v2：用户于2026-09-29确认，原待确认序号34，IMG_6834.PNG；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅，到店取餐；参考单价。用户确认默认中杯；未指定温度，不将价格扩展至冰/热等细分规格。原图第二份半价条件保留；本次仅录入单杯价，不推断寄存规则。",
+      "price": {
+        "amount": 1300,
+        "currency": "CNY"
+      },
+      "salesScopes": [
+        "standalone",
+        "offer_component"
+      ],
+      "status": "active",
+      "createdAt": "2026-09-29T14:41:33.057989Z",
+      "updatedAt": "2026-09-29T14:41:33.057989Z"
+    },
+    {
+      "id": "230700532140867584",
+      "brand": "mcd",
+      "name": "【美汁源】“多汁柠柠”",
+      "specification": "中杯",
+      "category": "饮品",
+      "aliases": [],
+      "description": "single-1补录修订v2：用户于2026-09-29确认，原待确认序号35，IMG_6834.PNG；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅，到店取餐；参考单价。用户确认默认中杯；未指定温度，不将价格扩展至冰/热等细分规格。",
+      "price": {
+        "amount": 1200,
+        "currency": "CNY"
+      },
+      "salesScopes": [
+        "standalone",
+        "offer_component"
+      ],
+      "status": "active",
+      "createdAt": "2026-09-29T14:41:33.071573Z",
+      "updatedAt": "2026-09-29T14:41:33.071573Z"
+    },
+    {
+      "id": "230700532430274560",
+      "brand": "mcd",
+      "name": "燕麦奶铁",
+      "specification": "中杯",
+      "category": "饮品",
+      "aliases": [],
+      "description": "single-1补录修订v2：用户于2026-09-29明确确认9.9元为中杯普通单价，覆盖原识别的会员专享条件；IMG_6831.PNG；成都高新南区中和街道锦韵路(远大购物中心A馆)餐厅，到店取餐；参考单价。",
+      "price": {
+        "amount": 990,
+        "currency": "CNY"
+      },
+      "salesScopes": [
+        "standalone",
+        "offer_component"
+      ],
+      "status": "active",
+      "createdAt": "2026-09-29T14:41:33.140428Z",
+      "updatedAt": "2026-09-29T14:41:33.140428Z"
     }
   ],
   "offers": [
@@ -10586,6 +11294,190 @@
       ],
       "createdAt": "2026-09-27T09:58:46.023705093Z",
       "updatedAt": "2026-09-27T09:58:46.023705093Z"
+    },
+    {
+      "id": "230700532476411904",
+      "version": 0,
+      "status": "draft",
+      "source": "mcd",
+      "title": "奶香大米风味圆筒2份优惠（锦韵路远大购物中心A馆）",
+      "price": {
+        "amount": 750,
+        "currency": "CNY"
+      },
+      "city": "成都",
+      "orderModes": [
+        "pickup"
+      ],
+      "components": [
+        {
+          "canonicalProductId": "230700530479923200",
+          "quantity": 2
+        }
+      ],
+      "createdAt": "2026-09-29T14:41:33.158408761Z",
+      "updatedAt": "2026-09-29T14:41:33.158408761Z"
+    },
+    {
+      "id": "230700532606435328",
+      "version": 0,
+      "status": "draft",
+      "source": "mcd",
+      "title": "奶香大米风味双旋圆筒2份优惠（锦韵路远大购物中心A馆）",
+      "price": {
+        "amount": 750,
+        "currency": "CNY"
+      },
+      "city": "成都",
+      "orderModes": [
+        "pickup"
+      ],
+      "components": [
+        {
+          "canonicalProductId": "230700530538643456",
+          "quantity": 2
+        }
+      ],
+      "createdAt": "2026-09-29T14:41:33.183379386Z",
+      "updatedAt": "2026-09-29T14:41:33.183379386Z"
+    },
+    {
+      "id": "230700532677738496",
+      "version": 0,
+      "status": "draft",
+      "source": "mcd",
+      "title": "奶香大米风味新地（朱古力）2份优惠（锦韵路远大购物中心A馆）",
+      "price": {
+        "amount": 1950,
+        "currency": "CNY"
+      },
+      "city": "成都",
+      "orderModes": [
+        "pickup"
+      ],
+      "components": [
+        {
+          "canonicalProductId": "230700530597363712",
+          "quantity": 2
+        }
+      ],
+      "createdAt": "2026-09-29T14:41:33.199748928Z",
+      "updatedAt": "2026-09-29T14:41:33.199748928Z"
+    },
+    {
+      "id": "230700532753235968",
+      "version": 0,
+      "status": "draft",
+      "source": "mcd",
+      "title": "奶香大米风味新地（草莓）2份优惠（锦韵路远大购物中心A馆）",
+      "price": {
+        "amount": 1950,
+        "currency": "CNY"
+      },
+      "city": "成都",
+      "orderModes": [
+        "pickup"
+      ],
+      "components": [
+        {
+          "canonicalProductId": "230700530656083968",
+          "quantity": 2
+        }
+      ],
+      "createdAt": "2026-09-29T14:41:33.21781422Z",
+      "updatedAt": "2026-09-29T14:41:33.21781422Z"
+    },
+    {
+      "id": "230700532828733440",
+      "version": 0,
+      "status": "draft",
+      "source": "mcd",
+      "title": "柠檬脆脆麦旋风2份优惠（锦韵路远大购物中心A馆）",
+      "price": {
+        "amount": 2325,
+        "currency": "CNY"
+      },
+      "city": "成都",
+      "orderModes": [
+        "pickup"
+      ],
+      "components": [
+        {
+          "canonicalProductId": "230700530710609920",
+          "quantity": 2
+        }
+      ],
+      "createdAt": "2026-09-29T14:41:33.236053595Z",
+      "updatedAt": "2026-09-29T14:41:33.236053595Z"
+    },
+    {
+      "id": "230700532904230912",
+      "version": 0,
+      "status": "draft",
+      "source": "mcd",
+      "title": "泷盐星星麦旋风2份优惠（锦韵路远大购物中心A馆）",
+      "price": {
+        "amount": 2325,
+        "currency": "CNY"
+      },
+      "city": "成都",
+      "orderModes": [
+        "pickup"
+      ],
+      "components": [
+        {
+          "canonicalProductId": "230700530773524480",
+          "quantity": 2
+        }
+      ],
+      "createdAt": "2026-09-29T14:41:33.254397511Z",
+      "updatedAt": "2026-09-29T14:41:33.254397511Z"
+    },
+    {
+      "id": "230700532988116992",
+      "version": 0,
+      "status": "draft",
+      "source": "mcd",
+      "title": "菠萝派2份优惠（锦韵路远大购物中心A馆）",
+      "price": {
+        "amount": 1275,
+        "currency": "CNY"
+      },
+      "city": "成都",
+      "orderModes": [
+        "pickup"
+      ],
+      "components": [
+        {
+          "canonicalProductId": "222281512379219968",
+          "quantity": 2
+        }
+      ],
+      "createdAt": "2026-09-29T14:41:33.273572345Z",
+      "updatedAt": "2026-09-29T14:41:33.273572345Z"
+    },
+    {
+      "id": "230700533059420160",
+      "version": 0,
+      "status": "draft",
+      "source": "mcd",
+      "title": "香芋派2份优惠（锦韵路远大购物中心A馆）",
+      "price": {
+        "amount": 1275,
+        "currency": "CNY"
+      },
+      "city": "成都",
+      "orderModes": [
+        "pickup"
+      ],
+      "components": [
+        {
+          "canonicalProductId": "222281490522701824",
+          "quantity": 2
+        }
+      ],
+      "createdAt": "2026-09-29T14:41:33.291290053Z",
+      "updatedAt": "2026-09-29T14:41:33.291290053Z"
     }
   ],
   "offerVersions": [
