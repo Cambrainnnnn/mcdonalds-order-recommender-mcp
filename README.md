@@ -14,6 +14,10 @@
 
 ## 架构
 
+自然语言需求拆解、类目与餐品 ID 解析、偏好比较及多方案核对已写入 [Hermes 推荐 skill](deploy/skills/meal-recommendation/SKILL.md)。该流程保留当前候选搜索的能力边界。
+
+使用本仓库 Hermes 容器时，更新 skill 后执行 `docker compose -f compose.hermes.yaml up -d --build --force-recreate hermes`，初始化脚本会同步 skill 及参考文件。使用独立安装的 Hermes 时，将 `deploy/skills/meal-recommendation` 整个目录同步到实际运行 profile 的 `skills/productivity/meal-recommendation`，包含 `references`；只更新远程 MCP Server 不会更新客户端 skill。新开聊天，先用 `/meal-recommendation` 加用餐需求验证显式加载，再用普通自然语言验证自动发现。行为检查见 [技能验收](deploy/skills/meal-recommendation/references/acceptance.md)。
+
 ```text
 cmd/api
   -> adapters/inbound/httpapi

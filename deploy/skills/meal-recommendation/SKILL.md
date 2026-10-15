@@ -1,19 +1,78 @@
 ---
 name: meal-recommendation
-description: Recommend meal combinations from the server-maintained meal-recommendation catalog and published offers.
+description: 麦当劳套餐推荐：解析需求、筛选搭配并比较价格与口味。
 ---
 
-# Server catalog meal recommendations
+# 套餐推荐
 
-Use the meal-recommendation MCP for meal and combo recommendations. Current scope is the server's maintained products, prices and published offers. City, store, store preparation, inventory and official live pricing are future extensions. Do not ask for city, store or location. Do not claim store availability or official quotes.
+## When to Use
 
-## Workflow
+用户需要麦当劳套餐、餐品搭配、预算筛选或修改已有推荐时使用。通过 meal-recommendation MCP 查询真实目录和推荐，不凭记忆给价格。此技能不负责运营录入、下单或支付。
 
-1. Resolve named products using `search_product_catalog` (complete name, optional specification). Use `list_product_catalog` only when browsing or identifying the complete name is needed. Both include disabled products: status does not prevent a product from being selected within a published offer.
-2. Only an `exact` result supplies `resolvedProductId`. If specifications are ambiguous, ask which the user wants; do not default to a large drink. Use `allowedProductIds` only when the user has accepted those alternatives. Never copy IDs from old conversations or this skill.
-3. Start a session, then replace its requirement using `update_meal_requirement`. Include `mustHave` entries with `query`, `quantity` and resolved IDs. Reuse the default `objectives` returned by the session. Location may be omitted. `orderMode` is optional: only include it if the user specified a preference, otherwise omit it without asking.
-4. Once at least one must-have item is present, the session can be `ready`. Generate recommendations and report server-maintained prices and applicable restrictions. Published offers retain their maintained time rules; use `targetTime` if the user specifies a meal time.
+当前服务使用维护的单品参考价和已发布套餐，不查询城市、门店、库存或官方实时价格。无需主动要求位置、预算或取餐方式；仅传入用户已指定的条件。工具名称可能带 MCP 前缀，使用当前实际可用的对应工具。若工具不可用，明确无法查询，不生成假结果。
 
-Standalone products are eligible only when active, marked `standalone`, and priced. A disabled product or one without a standalone price can still be included in an eligible published offer. A catalog match establishes identity, not purchasability.
+## Procedure
 
-If no candidates are returned, say the maintained data and supplied requirements did not yield a combination. Do not infer that a store lacks stock. Do not probe random cities, stores or order modes. An expired session can be recreated with the same user requirements.
+### 1. 先理解约束，再解析商品
+
+维护一份用户需求基准：必选种类、数量与单位、偏好、排除、预算、时间、允许替代范围。
+
+- “必须、需要、不要、最多花”分别形成必选或硬限制；“最好、优先”是软偏好。偏好未满足不等于整个需求无解。
+- “两个汉堡”按至少两个理解；套餐可多带餐品，但应披露。用户说“恰好、只能、不要多余”时保留上限意图，当前工具只能表达最低数量，返回后另行核对；筛选不到不能断言全集无解。
+- “一些小食”等未确定的数量/范围，在浏览目录后用一句话集中确认，如“至少1份，以下小食都可以吗？”用户确认前可查目录，不提交依赖这些假设的最终推荐。不把未指定的小食默认为薯条。
+- 已说“任意汉堡”“小杯大杯都行”的范围无需重复逐项询问；商品身份或规格确有歧义才澄清。
+- 必选与排除冲突时先澄清；不擅自删约束。过敏、忌口涉及配料时，当前目录不能保证配料或交叉接触安全，不能用排除几个商品ID作保证。
+
+### 2. 以实时目录构建商品集合
+
+- 明确标准名：用 `search_product_catalog` 批量搜索，输入完整名称及可选完整规格。该搜索不支持简称、别名、子串或自然语言。
+- 简称、类别、禁选全规格：先 `list_product_catalog`。支持 `brand`、`category`、`query`；`query` 可匹配子串/别名。麦当劳用 `brand=mcd`。为类目集合或禁选全规格查全目录时，不用过窄的 query 漏掉其他商品。
+- 根据实际名称、category、specification、aliases建立集合；类别含义不明确时展示实际选项供确认，不猜类目归属或餐品ID。简称对应标准名后，再用完整名称/规格搜索确认。
+- 只有 `exact` 返回值可直接作 `resolvedProductId`。`ambiguous` 先澄清；只有用户已接受的替代范围，才可用候选真实ID构建 `allowedProductIds`，不能自动接受所有搜索候选。
+- 类目需求用用户认可的商品ID集合表达，不把“汉堡”“小食”当ID。禁选餐品覆盖目录中全部相关规格，写入 `exclude`；同时从允许集合移除禁选。
+- 集合内数量单位必须可比：单个汉堡与双个装不能直接共用 quantity=2；鸡翅“2块”规格的 quantity=2是4块。“小食1份”须按确认的目录份装解释。
+- 查询包括 disabled 商品；它们仍可能由套餐提供。不要因为 disabled、无单点价或仅 offer_component 就从套餐需求中剔除。身份匹配不证明可购买。
+
+### 3. 选择查询方式
+
+具体餐品需求，提交一次忠实的需求即可，非必需偏好放入 `niceToHave`，不重复增加必选数量。
+
+用户接受类目替代、又希望比较价格与具体餐品偏好时，读取 [类目偏好比较](references/preference-comparison.md)，建立少量有意义的场景。默认最多3个场景；不为每个商品逐个建会话，不做无界排列。即使偏好场景成功，也比较预先定义的宽泛场景，才能判断偏好的价格代价。
+
+所有场景保持相同的硬约束。不能自行放宽数量、预算、排除、时间或指定规格。用户主动允许的新替代范围可用于新场景；不能用内部错误当作无解理由。
+
+### 4. 提交完整需求并生成
+
+依赖关系是：解析ID → 创建/读取会话 → 更新需求 → 生成推荐。串行执行同一会话的更新和生成。
+
+- 无会话调用 `start_recommendation_session`；续用会话先 `get_recommendation_session`核对，过期后以原需求重建。跨场景独立会话，保留场景与sessionId的映射。
+- `update_meal_requirement` 接收 `sessionId` 和完整 `requirement`，不是增量Patch。包括 `mustHave`、有效的 `niceToHave`、`exclude`、`budget`、`targetTime`、`orderMode` 及 `objectives`；省略不适用的可选项。复用会话默认 objectives，除非用户要求调整。
+- 餐品请求含可读 `query`、正整数 `quantity`，以及已解析的 `resolvedProductId` 或确认范围的 `allowedProductIds`。query仅作记录，不能指望服务端自动解析自然语言。
+- 金额使用分：30元→`{"amount":3000,"currency":"CNY"}`。targetTime用带偏移的RFC3339，按用户用餐时刻；时区不明时澄清。供餐星期和时段按北京时间解释，不伪造时间绕过限制。
+- 需求更新后检查保存内容，再调用 `generate_meal_recommendations`。ready只表示字段完整，不代表有供给。
+- 用户修改需求时保留仍有效的条件、清除明确取消的条件。数量“改成2个”是替换，不是加2个。比较场景也按新基准重新构造，旧结果不冒充新结果。
+
+### 5. 核对并解释真实结果
+
+从 `result.recommendations[].candidate.purchaseLegs[]`读取实际餐品；会话结果在 `session`，目录列表在 `products`，批量搜索在 `results`。以当前工具真实结构为准。
+
+- 核对每个方案的必选覆盖、数量换算、禁选、预算、指定规格及用户额外上限。套餐允许带额外餐品，但不能带禁选。发现违规不推荐为成功方案，保留记录报告不一致。
+- 核对总价与各leg价格合计；任选加价可能已计入leg价格，不重复加价。不编造套餐内部每个单品的分摊价格。货币不同、名称缺失或规则无法核实应说明。
+- 用 `offerTitle`、`name`、`specification`、`quantity`、`choiceGroupName`展示实际选择；不要把全部可选项说成实际获得的餐品，不把ID当名称。
+- 同一实际方案跨场景合并。比较实际总价、偏好餐品数量、额外餐品和购买组合数；不要直接比较不同场景的score或label来证明谁更好。
+- 通常给1–3个不同且有价值的方案，解释各自的价格/口味取舍和差价；只有一条就展示一条。单次标签如实引用；跨场景自行归纳的“更合口味”等说明其比较依据，不伪装成服务端标签。
+- 报告维护价格、重要warnings及适用限制。不声称实时官方价、库存、全网最低或已下单，不提供虚构购买链接。
+
+## Pitfalls and Recovery
+
+合法无候选时可继续预先定义的其他偏好场景；所有场景无候选则停止。不得循环新建会话、轮换城市/取餐方式、改时间或删条件碰运气。
+
+遇到工具错误：保留工具名、参数、原始错误、sessionId和调用时间，核对保存需求。只在参数错误有证据或明确暂时性故障时做一次针对性纠正/重试；仍失败就报告。本轮有场景失败时可以展示其他合法结果，但说明比较未完成，不据此断言失败场景不可行。
+
+六个工具不能直接列出已发布套餐、过滤计数或根因。无候选不证明套餐为空、未发布或门店缺货。必要时核对商品 status/salesScopes/price，向用户区分观察事实和待查原因。身份识别成功不代表可单卖；仅有 offer_component 也不证明实际存在引用它的套餐。
+
+当前服务对允许替代集合的单点搭配不完整穷举，也未完整搜索多套餐联合购买。多场景比较只覆盖实际返回方案，不能保证全局最优。用户要求“全平台最便宜”“买多个套餐最优”时明确这项限制，不用更多盲目调用伪装完整搜索。
+
+## Verification
+
+结束前检查：需求是否忠实、ID是否来自本次目录、硬约束是否贯穿所有场景、最终明细/价格是否有工具依据、偏好差价是否实际算出。用 [对话验收](references/acceptance.md) 验证技能加载与行为；读取 [目录边界](references/mcdonalds-cn-catalog.md) 可核对供给解释。
